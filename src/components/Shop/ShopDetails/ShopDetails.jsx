@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../../../config";
 import "./ShopDetails.css";
 import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
@@ -16,14 +17,14 @@ const ShopDetails = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPriceRange, setSelectedPriceRange] = useState([0, 100000]);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const baseUrl = "http://localhost:3000/uploads/";
+  const baseUrl = `${API_BASE_URL}/uploads/`;
   const productsPerPage = 6;
 
   // Fetch plants from backend
   useEffect(() => {
     const fetchPlants = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/plants");
+        const response = await axios.get(`${API_BASE_URL}/plants`);
         setPlants(response.data.data);
         setLoading(false);
       } catch (err) {

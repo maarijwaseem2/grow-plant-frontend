@@ -1,8 +1,9 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "../config";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Header.css";
-import icon from "../modules/Icons/cart.png";
-import userIcon from "../modules/Icons/notification.png";
+import icon from "../Modules/Icons/cart.png";
+import userIcon from "../Modules/Icons/notification.png";
 import { CartContext } from "../context/CartContext";
 import axios from "axios";
 import { decodeJwt } from "jose";
@@ -62,7 +63,7 @@ const Header = () => {
 
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/user", {
+        const response = await axios.get(`${API_BASE_URL}/user`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },

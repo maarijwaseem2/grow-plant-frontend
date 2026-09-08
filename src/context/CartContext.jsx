@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; 
@@ -65,7 +66,7 @@ export const CartProvider = ({ children }) => {
     console.log(quantity);
     try {
       // Make an API call to release the reserved stock
-      await axios.patch(`http://localhost:3000/plants/${productID}/release`, {
+      await axios.patch(`${API_BASE_URL}/plants/${productID}/release`, {
         quantity,
       });
 

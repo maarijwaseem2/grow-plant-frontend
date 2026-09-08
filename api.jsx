@@ -1,9 +1,10 @@
 import axios from "axios";
+import { API_BASE_URL } from "./src/config";
 
 // Fetch all plants
 export const fetchPlants = async () => {
   try {
-    const response = await axios.get("http://localhost:3000/plants");
+    const response = await axios.get(`${API_BASE_URL}/plants`);
 
     return response.data;
   } catch (error) {
@@ -16,7 +17,7 @@ export const fetchPlants = async () => {
 // export const fetchPlantById = async (id) => {
 //   try {
 //     console.log(`Attempting to fetch plant with ID: ${id}`);
-//     const response = await axios.get(`http://localhost:3000/plants/${id}`);
+//     const response = await axios.get(`${API_BASE_URL}/plants/${id}`);
 
 //     console.log("Plant Details Response:", response.data);
 
@@ -33,7 +34,7 @@ export const fetchPlants = async () => {
 // };
 export const fetchPlantById = async (id) => {
   try {
-    const response = await axios.get(`http://localhost:3000/plants/${id}`, {
+    const response = await axios.get(`${API_BASE_URL}/plants/${id}`, {
       // Add detailed error logging
       validateStatus: function (status) {
         return status >= 200 && status < 300; // Default

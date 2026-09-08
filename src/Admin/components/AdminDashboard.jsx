@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../../config";
 import {
   FiEdit,
   FiTrash2,
@@ -27,7 +28,7 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [payments, setPayments] = useState([]);
-  const baseUrl = "http://localhost:3000/uploads/";
+  const baseUrl = `${API_BASE_URL}/uploads/`;
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -50,27 +51,27 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const plantsResponse = await axios.get("http://localhost:3000/plants");
+        const plantsResponse = await axios.get(`${API_BASE_URL}/plants`);
         setPlants(plantsResponse.data.data);
 
-        const ordersResponse = await axios.get("http://localhost:3000/order");
+        const ordersResponse = await axios.get(`${API_BASE_URL}/order`);
         setOrders(ordersResponse.data);
 
         const paymentsResponse = await axios.get(
-          "http://localhost:3000/payments"
+          `${API_BASE_URL}/payments`
         );
         setPayments(paymentsResponse.data);
 
-        const userResponse = await axios.get("http://localhost:3000/user");
+        const userResponse = await axios.get(`${API_BASE_URL}/user`);
         setUsers(userResponse.data.data);
 
         const servicesResponse = await axios.get(
-          "http://localhost:3000/services"
+          `${API_BASE_URL}/services`
         );
         setPlantServices(servicesResponse.data.data || servicesResponse.data);
 
         const gardenersResponse = await axios.get(
-          "http://localhost:3000/user?role=Gardener"
+          `${API_BASE_URL}/user?role=Gardener`
         );
         setGardeners(gardenersResponse.data.data);
       } catch (error) {
@@ -105,7 +106,7 @@ const AdminDashboard = () => {
         formDataToSubmit.append("image", formData.image);
       }
       const response = await axios.post(
-        "http://localhost:3000/plants",
+        `${API_BASE_URL}/plants`,
         formDataToSubmit,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -130,7 +131,7 @@ const AdminDashboard = () => {
   // Delete plant
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/plants/${id}`);
+      await axios.delete(`${API_BASE_URL}/plants/${id}`);
       setPlants(plants.filter((plant) => plant.id !== id));
       setShowModal(false);
     } catch (error) {
@@ -145,7 +146,7 @@ const AdminDashboard = () => {
     try {
       if (selectedOrder) {
         await axios.patch(
-          `http://localhost:3000/services/assign-gardener/${selectedOrder.id}`,
+          `${API_BASE_URL}/services/assign-gardener/${selectedOrder.id}`,
           { gardenerId: selectedGardener },
           {
             headers: {
@@ -153,7 +154,7 @@ const AdminDashboard = () => {
             },
           }
         );
-        const ordersResponse = await axios.get("http://localhost:3000/order", {
+        const ordersResponse = await axios.get(`${API_BASE_URL}/order`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
@@ -162,7 +163,7 @@ const AdminDashboard = () => {
         setSelectedOrder(null);
       } else if (selectedService) {
         await axios.patch(
-          `http://localhost:3000/services/assign-gardener/${selectedService.id}`,
+          `${API_BASE_URL}/services/assign-gardener/${selectedService.id}`,
           { gardenerId: selectedGardener },
           {
             headers: {
@@ -171,7 +172,7 @@ const AdminDashboard = () => {
           }
         );
         const servicesResponse = await axios.get(
-          "http://localhost:3000/services",
+          `${API_BASE_URL}/services`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,

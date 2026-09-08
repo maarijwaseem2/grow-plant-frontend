@@ -35,22 +35,16 @@ import OrderDetails from "./components/Order-Details"; // Import OrderDetails co
 import CustomScrollbar from "./components/CustomScrollbar"; // Import the CustomScrollbar component
 import DetailsProduct from "./components/DetailsProduct";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PrivateRoute from "./components/PrivateRoute";
 import AdminDashboard from "./Admin/components/AdminDashboard";
 import GardenerDashboard from "./Gardener/components/GardenerDashboard";
 import GardenerRoute from "./components/GardenerRoute";
 import ComplaintForm from "./components/Complain";
-import { onMessage } from 'firebase/messaging';
-import { messaging } from './Firebase'; 
+import { messaging, getToken, onMessage } from './Firebase';
 
-
-<Route
-  path="/gardener/dashboard"
-  element={
-    <GardenerRoute>
-      <GardenerDashboard />
-    </GardenerRoute>
-  }
-/>
+// (Removed a stray <Route> element that sat here at module top level. It was
+// never rendered — the real /gardener/dashboard route is defined inside the
+// <Routes> block below — so it was dead code.)
 
 function App() {
   const [favoriteCount, setFavoriteCount] = useState(0);
@@ -241,10 +235,24 @@ function App() {
     }
   };
   
-  onMessage(messaging, (payload) => {
-    console.log('Message received. ', payload);
-    // Customize notification here
-  });
+  // Foreground push messages. This used to run on every render and crashed if
+  // Firebase messaging failed to initialise. It's now guarded and cleaned up.
+  useEffect(() => {
+    if (!messaging) return;
+    let unsubscribe;
+    try {
+      unsubscribe = onMessage(messaging, (payload) => {
+        console.log('Message received. ', payload);
+        // Customize notification here
+      });
+    } catch (err) {
+      console.warn('onMessage subscription failed:', err?.message || err);
+    }
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -325,45 +333,51 @@ function App() {
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute>
+              <PrivateRoute allowedRole="Admin">
                 <>
                   <AdminDashboard />
                 </>
-              </ProtectedRoute>
+              </PrivateRoute>
             }
           />
 
           <Route
             path="/admin/plants"
             element={
-              <div className="admin-layout">
-                <Sidebar />
-                <main className="main-content">
-                  <PlantsPage />
-                </main>
-              </div>
+              <PrivateRoute allowedRole="Admin">
+                <div className="admin-layout">
+                  <Sidebar />
+                  <main className="main-content">
+                    <PlantsPage />
+                  </main>
+                </div>
+              </PrivateRoute>
             }
           />
           <Route
             path="/admin/orders"
             element={
-              <div className="admin-layout">
-                <Sidebar />
-                <main className="main-content">
-                  <OrdersPage />
-                </main>
-              </div>
+              <PrivateRoute allowedRole="Admin">
+                <div className="admin-layout">
+                  <Sidebar />
+                  <main className="main-content">
+                    <OrdersPage />
+                  </main>
+                </div>
+              </PrivateRoute>
             }
           />
           <Route
             path="/admin/payments"
             element={
-              <div className="admin-layout">
-                <Sidebar />
-                <main className="main-content">
-                  <PaymentsPage />
-                </main>
-              </div>
+              <PrivateRoute allowedRole="Admin">
+                <div className="admin-layout">
+                  <Sidebar />
+                  <main className="main-content">
+                    <PaymentsPage />
+                  </main>
+                </div>
+              </PrivateRoute>
             }
           />
           <Route

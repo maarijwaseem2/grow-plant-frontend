@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from "../config";
 import backgroundImage from "../Modules/background/home-services-background.jpg"; // Update with the actual image path
 import "./HomeService.css";
 import "./Service.css";
@@ -29,11 +30,11 @@ const HomeService = ({ products }) => {
     name: "",
     email: "",
   });
-  const baseUrl = "http://localhost:3000/uploads/";
+  const baseUrl = `${API_BASE_URL}/uploads/`;
   useEffect(() => {
     const fetchPlants = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/plants");
+        const response = await axios.get(`${API_BASE_URL}/plants`);
         setPlants(response.data.data);
         setIsDataLoaded(true); // Mark as loaded
       } catch (error) {
@@ -140,7 +141,7 @@ const HomeService = ({ products }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/home-service",
+        `${API_BASE_URL}/home-service`,
         orderData,
         {
           headers: {
@@ -180,7 +181,7 @@ const HomeService = ({ products }) => {
 
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/user", {
+        const response = await axios.get(`${API_BASE_URL}/user`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },

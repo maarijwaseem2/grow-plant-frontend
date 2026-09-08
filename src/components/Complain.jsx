@@ -1,4 +1,5 @@
 import React from "react";
+import { API_BASE_URL } from "../config";
 import {
   User,
   Phone,
@@ -96,7 +97,7 @@ const ComplaintForm = () => {
   //     }
 
   //     const response = await axios.post(
-  //       "http://localhost:3000/complain", // Replace with your actual backend URL
+  //       `${API_BASE_URL}/complain`, // Replace with your actual backend URL
   //       formData,
   //       {
   //         headers: {
@@ -154,7 +155,7 @@ const ComplaintForm = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:3000/complain",
+        `${API_BASE_URL}/complain`,
         formData,
         {
           headers: {

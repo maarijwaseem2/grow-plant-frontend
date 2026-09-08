@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../config";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Elements } from "@stripe/react-stripe-js";
@@ -131,7 +132,7 @@ const DeliveryForm = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:3000/services",
+        `${API_BASE_URL}/services`,
         formData,
         {
           headers: {
@@ -186,7 +187,7 @@ const DeliveryForm = () => {
 
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/user", {
+        const response = await axios.get(`${API_BASE_URL}/user`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },

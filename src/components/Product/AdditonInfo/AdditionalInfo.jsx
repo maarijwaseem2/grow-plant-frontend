@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../../../config";
 import axios from "axios";
 import "./AdditionalInfo.css";
 
@@ -11,7 +12,7 @@ const AdditionalInfo = ({ selectedProductID }) => {
       try {
         if (selectedProductID) {
           const response = await axios.get(
-            `http://localhost:3000/plants/${selectedProductID}`
+            `${API_BASE_URL}/plants/${selectedProductID}`
           );
           setProduct(response.data.data);
         }

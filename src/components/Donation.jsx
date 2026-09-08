@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import boxImage1 from "../modules/Icons/donate-icon.png";
-import boxImage2 from "../modules/Icons/join-hands.png";
-import boxImage3 from "../modules/Icons/plant-trees.png";
+import { API_BASE_URL } from "../config";
+import boxImage1 from "../Modules/Icons/donate-icon.png";
+import boxImage2 from "../Modules/Icons/join-hands.png";
+import boxImage3 from "../Modules/Icons/plant-trees.png";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
 import PaymentForm from "./PaymentForm";
-import "./donation.css";
+import "./Donation.css";
 import axios from "axios";
 import { decodeJwt } from "jose";
 import { useNavigate } from "react-router-dom";
@@ -52,7 +53,7 @@ const Donation = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/donation",
+        `${API_BASE_URL}/donation`,
         orderData,
         {
           headers: {
@@ -99,7 +100,7 @@ const Donation = () => {
 
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/user", {
+        const response = await axios.get(`${API_BASE_URL}/user`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },

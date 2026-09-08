@@ -1,390 +1,409 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import debounce from "lodash.debounce";
-import { toast } from "react-toastify"; // Import react-toastify
-import "react-toastify/dist/ReactToastify.css"; // Import toast styles
 import axios from "axios";
-import "./register.css";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { API_BASE_URL } from "../config";
 
-// Import images
-import image1 from "../Modules/background2.jpg";
-import image2 from "../Modules/background3.jpg";
-import image3 from "../Modules/background4.png";
-import image4 from "../Modules/background5.jpg";
-import backArrow from "../Modules/Logo/left-arrow.png";
-import googleLogo from "../Modules/Logo/google-icon.png";
-import showPasswordIcon from "../Modules/Logo/show-password.png";
-import hidePasswordIcon from "../Modules/Logo/hide-password.png";
+import {
+  Box,
+  Paper,
+  TextField,
+  Button,
+  Typography,
+  InputAdornment,
+  IconButton,
+  MenuItem,
+  Link as MuiLink,
+  CircularProgress,
+  ThemeProvider,
+  createTheme,
+} from "@mui/material";
+import {
+  Leaf,
+  Sprout,
+  TreePine,
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+} from "lucide-react";
+
+// Same refined green palette as the login screen for a consistent look.
+const greenTheme = createTheme({
+  palette: {
+    primary: { main: "#2e7d32", dark: "#1b5e20", light: "#66bb6a", contrastText: "#ffffff" },
+    background: { default: "#f4f7f4" },
+    text: { primary: "#1b3a24" },
+  },
+  shape: { borderRadius: 12 },
+  typography: {
+    fontFamily: '"Poppins", "Segoe UI", system-ui, -apple-system, sans-serif',
+  },
+});
 
 const Register = () => {
-  const images = [image1, image2, image3, image4];
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [selectedTab, setSelectedTab] = useState("signUp");
-  const [password, setPassword] = useState("");
-  const [rePasswordVisible, setRePasswordVisible] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState(""); // Added username state
-  const [emailError, setEmailError] = useState("");
-  const [animationClass, setAnimationClass] = useState("");
-  const [selectedAuthOption, setSelectedAuthOption] = useState("signup");
-  const [isSignInClicked, setIsSignInClicked] = useState(false);
-  const [role, setRole] = useState("");
-  const [rePassword, setRePassword] = useState("");
-  const [registrationError, setRegistrationError] = useState(""); // Added for API error handling
-
   const navigate = useNavigate();
-  const emailInputRef = useRef(null);
-  const [passwordVisible, setPasswordVisible] = useState(false);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [images.length]);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rePassword, setRePassword] = useState("");
+  // Default to a real value so the select shows what it will actually submit.
+  const [role, setRole] = useState("Customer");
 
-  useEffect(() => {
-    setAnimationClass("slide-in");
-    const timer = setTimeout(() => {
-      setAnimationClass("");
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRePassword, setShowRePassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [matchError, setMatchError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const validatePasswords = useCallback(
-    debounce((pass, rePass) => {
-      if (!pass || !rePass) {
-        setPasswordError("");
-      } else if (pass !== rePass) {
-        setPasswordError("Passwords do not match");
-      } else {
-        setPasswordError("");
-      }
-    }, 500),
-    []
-  );
-
-  const handleRoleChange = (event) => {
-    setRole(event.target.value);
-    console.log("Selected Role:", event.target.value);
+  const validateEmail = (value) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!value) return "";
+    return re.test(value) ? "" : "Invalid email format";
   };
 
-  const handlePasswordChange = (event) => {
-    const newPassword = event.target.value;
-    setPassword(newPassword);
-    validatePasswords(newPassword, rePassword);
+  const handleEmailChange = (e) => {
+    const v = e.target.value;
+    setEmail(v);
+    setEmailError(validateEmail(v));
   };
 
-  const preventSpaces = (event) => {
-    if (event.key === " ") {
-      event.preventDefault();
-    }
+  const handlePasswordChange = (e) => {
+    const v = e.target.value;
+    setPassword(v);
+    setPasswordError(v && v.length < 6 ? "Password must be at least 6 characters" : "");
+    setMatchError(rePassword && v !== rePassword ? "Passwords do not match" : "");
   };
 
-  const handleRePasswordChange = (event) => {
-    const newRePassword = event.target.value;
-    setRePassword(newRePassword);
-    validatePasswords(password, newRePassword);
+  const handleRePasswordChange = (e) => {
+    const v = e.target.value;
+    setRePassword(v);
+    setMatchError(v && v !== password ? "Passwords do not match" : "");
   };
 
-  const handleBackClick = () => {
-    navigate("/");
+  const noSpace = (e) => {
+    if (e.key === " ") e.preventDefault();
   };
 
-  const validateEmail = useCallback(
-    debounce((email) => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (email === "") {
-        setEmailError("");
-      } else if (!emailRegex.test(email)) {
-        setEmailError("Invalid email format");
-      } else {
-        setEmailError("");
-      }
-    }, 500),
-    []
-  );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const handleEmailChange = (event) => {
-    const newEmail = event.target.value;
-    setEmail(newEmail);
-    setEmailError("");
-    validateEmail(newEmail);
-  };
+    const em = validateEmail(email);
+    setEmailError(em);
+    const pm = password.length < 6 ? "Password must be at least 6 characters" : "";
+    setPasswordError(pm);
+    const mm = password !== rePassword ? "Passwords do not match" : "";
+    setMatchError(mm);
 
-  const handleUsernameChange = (event) => {
-    setUsername(event.target.value);
-  };
-
-  const handleFocus = (event) => {
-    event.target.classList.add("focused");
-  };
-
-  const handleBlur = (event) => {
-    if (!event.target.value) {
-      event.target.classList.remove("focused");
-    }
-  };
-
-  const handleAuthOptionClick = (option) => {
-    if (option === "signin") {
-      setIsSignInClicked(true);
-      setTimeout(() => {
-        navigate("/login");
-      }, 500);
-    } else {
-      setSelectedAuthOption(option);
-      setIsSignInClicked(false);
-    }
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    setRegistrationError("");
-
-    if (password.length < 7) {
-      setRegistrationError("Password must be at least 7 characters long");
+    if (!email || !username || !password || !rePassword || !role) {
+      toast.error("All fields are required.");
       return;
     }
-    if (emailError || passwordError) {
-      setRegistrationError("Please fix the errors before submitting.");
+    if (em || pm || mm) {
+      toast.error("Please fix the errors before submitting.");
       return;
     }
-    if (!email || !password || !username || !role) {
-      setRegistrationError("All fields are required.");
-      return; // Prevent form submission
-    }
-    console.log("Form data before submission:", {
-      email,
-      username,
-      password,
-      role,
-    });
-  
 
+    setSubmitting(true);
     try {
-      const response = await axios.post("http://localhost:3000/user", {
+      await axios.post(`${API_BASE_URL}/user`, {
         email,
         username,
         password,
         rePassword,
         role,
       });
-      console.log("res", response);
-      navigate("/login");
       toast.success("Registration successful! Please log in.");
+      navigate("/login");
     } catch (error) {
       if (error.response) {
-        if (error.response.data.message === "Admin already exists") {
-          toast.error("An admin already exists. You cannot register as an Admin.");
-        } else if (error.response.data.message === "Email already exists") {
-          toast.error("This email is already registered.");
-        } else if (error.response.data.message === "Username already exists") {
-          toast.error("This username is already taken.");
+        // Backend errors: { message: { error: "<text>", statusCode } }
+        const serverError =
+          error.response?.data?.message?.error ??
+          (typeof error.response?.data?.message === "string"
+            ? error.response.data.message
+            : "") ??
+          "";
+
+        let friendly;
+        if (serverError.includes("Admin already exists")) {
+          friendly = "An admin already exists. You cannot register as an Admin.";
+        } else if (serverError.toLowerCase().includes("email")) {
+          friendly = "This email is already registered.";
+        } else if (serverError.toLowerCase().includes("user already exists")) {
+          friendly = "This username is already taken.";
+        } else if (serverError.includes("Passwords do not match")) {
+          friendly = "Passwords do not match.";
         } else {
-          toast.error("Registration failed. Please try again.");
+          friendly = serverError || "Registration failed. Please try again.";
         }
-        setRegistrationError(
-          error.response.data.message ||
-            "Registration failed. Please try again."
-        );
+        toast.error(friendly);
       } else if (error.request) {
         toast.error("No response from server. Please check your connection.");
-        setRegistrationError(
-          
-          "No response from server. Please check your connection."
-        );
       } else {
         toast.error("An error occurred during registration.");
-        setRegistrationError("An error occurred during registration.");
       }
-      toast.error("An admin already exists. You cannot register as an Admin.")
-      console.error("Registration error:", error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    if (email !== "") {
-      emailInputRef.current.classList.add("focused");
-    } else {
-      emailInputRef.current.classList.remove("focused");
-    }
-  }, [email]);
-
   return (
-    <div className="register-container">
-      <div className="flex h-screen">
-        <div
-          className="image-section"
-          style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
-        ></div>
-
-        <div className="signup-section relative flex flex-col justify-start">
-          <form
-            className={`group flex flex-col gap-20 absolute top-4 left-20 w-full ${
-              isSignInClicked ? "slide-out" : ""
-            }`}
-            onSubmit={handleSubmit}
+    <ThemeProvider theme={greenTheme}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: { xs: 0, sm: 3 },
+          background:
+            "radial-gradient(1200px 600px at 90% -10%, #e8f2e9 0%, #f4f7f4 40%, #eef3ef 100%)",
+        }}
+      >
+        <Paper
+          elevation={8}
+          sx={{
+            width: "100%",
+            maxWidth: 980,
+            minHeight: { xs: "100vh", sm: 640 },
+            display: "flex",
+            overflow: "hidden",
+            borderRadius: { xs: 0, sm: 4 },
+          }}
+        >
+          {/* Brand panel — hidden on small screens */}
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              flex: "0 0 42%",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              p: 5,
+              color: "#fff",
+              background: "linear-gradient(160deg, #1b5e20 0%, #2e7d32 48%, #43a047 100%)",
+            }}
           >
-            <img
-              src={backArrow}
-              alt="Back"
-              className="back-arrow mt-8"
-              onClick={handleBackClick}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+              <Leaf size={30} />
+              <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
+                GO GREEN
+              </Typography>
+            </Box>
 
-            <div className="flex items-center mt-4">
-              <h1
-                className={`sign-uptext tracking-tight cursor-pointer ${
-                  selectedTab === "signUp" ? "text-black" : "text-gray-400"
-                }`}
-                onClick={() => setSelectedTab("signUp")}
-              >
-                Sign Up
-              </h1>
-              <div style={{ width: "50px" }} />
-              <h1
-                className={`sign-intext tracking-tight cursor-pointer ${
-                  selectedTab === "signIn" ? "text-black" : "text-gray-400"
-                }`}
-                onClick={() => handleAuthOptionClick("signin")}
-              >
-                Sign In
-              </h1>
-            </div>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.25, mb: 1.5 }}>
+                Join a community growing a greener planet.
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                Create your account to order plants, subscribe to planting plans,
+                and follow your trees as they grow.
+              </Typography>
+            </Box>
 
-            <div className="level-bar-container">
-              <div className="level-bar-filled"></div>
-            </div>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              {[
+                { icon: <Sprout size={20} />, text: "Choose from many plant species" },
+                { icon: <TreePine size={20} />, text: "Pick real planting locations" },
+                { icon: <Leaf size={20} />, text: "Transparent growth tracking" },
+              ].map((f, i) => (
+                <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      p: 0.8,
+                      borderRadius: "50%",
+                      bgcolor: "rgba(255,255,255,0.15)",
+                    }}
+                  >
+                    {f.icon}
+                  </Box>
+                  <Typography variant="body2" sx={{ opacity: 0.95 }}>
+                    {f.text}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
 
-            <div className="google-signup-container">
-              <img src={googleLogo} alt="Google" className="google-logo" />
-              <span className="google-signup-text">Sign Up with Google</span>
-            </div>
+          {/* Form panel */}
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              p: { xs: 3, sm: 5, md: 6 },
+            }}
+          >
+            <Button
+              onClick={() => navigate("/")}
+              startIcon={<ArrowLeft size={18} />}
+              sx={{ alignSelf: "flex-start", mb: 1.5, color: "text.secondary", textTransform: "none" }}
+            >
+              Back to home
+            </Button>
 
-            <div className="or-divider">
-              <span className="line"></span>
-              <span className="or-text">Or</span>
-              <span className="line"></span>
-            </div>
+            <Box
+              sx={{
+                display: { xs: "flex", md: "none" },
+                alignItems: "center",
+                gap: 1,
+                mb: 1.5,
+                color: "primary.main",
+              }}
+            >
+              <Leaf size={26} />
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                GO GREEN
+              </Typography>
+            </Box>
 
-            <div className="inputBox">
-              <input
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+              Create your account
+            </Typography>
+            <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+              It only takes a minute to get started.
+            </Typography>
+
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+              <TextField
+                fullWidth
+                label="Email address"
                 type="email"
-                id="email"
-                name="email"
-                className="email-input"
-                required
-                placeholder=" "
                 value={email}
                 onChange={handleEmailChange}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                ref={emailInputRef}
+                error={!!emailError}
+                helperText={emailError}
+                autoComplete="email"
+                margin="dense"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Mail size={18} />
+                    </InputAdornment>
+                  ),
+                }}
               />
-              <span className="floating-label">Enter your Email</span>
-              {emailError && <div className="email-error">{emailError}</div>}
-            </div>
 
-            <div className="inputBox">
-              <input
-                type="text"
-                id="username"
-                name="username"
-                className="username-input"
-                required
-                placeholder=" "
+              <TextField
+                fullWidth
+                label="Username"
                 value={username}
-                onChange={handleUsernameChange}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                margin="dense"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <User size={18} />
+                    </InputAdornment>
+                  ),
+                }}
               />
-              <span className="floating-label">Enter your Username</span>
-            </div>
 
-            <div className="inputBox">
-              <input
-                type={passwordVisible ? "text" : "password"}
-                id="password"
-                name="password"
-                className="password-input"
-                required
-                placeholder="Enter your password"
+              <TextField
+                fullWidth
+                label="Password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={handlePasswordChange}
-                onKeyDown={preventSpaces}
+                onKeyDown={noSpace}
+                error={!!passwordError}
+                helperText={passwordError}
+                autoComplete="new-password"
+                margin="dense"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock size={18} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword((s) => !s)} edge="end">
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
 
-              <span
-                className="eye-icon"
-                onClick={() => setPasswordVisible(!passwordVisible)}
-              >
-                <img
-                  src={passwordVisible ? hidePasswordIcon : showPasswordIcon}
-                  alt={passwordVisible ? "Hide Password" : "Show Password"}
-                />
-              </span>
-            </div>
-
-            <div className="inputBox">
-              <input
-                type={rePasswordVisible ? "text" : "password"}
-                id="repassword"
-                name="repassword"
-                className="reenter-password-input"
-                required
-                placeholder=" "
+              <TextField
+                fullWidth
+                label="Re-enter password"
+                type={showRePassword ? "text" : "password"}
                 value={rePassword}
                 onChange={handleRePasswordChange}
-                onKeyDown={preventSpaces}
+                onKeyDown={noSpace}
+                error={!!matchError}
+                helperText={matchError}
+                autoComplete="new-password"
+                margin="dense"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock size={18} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowRePassword((s) => !s)} edge="end">
+                        {showRePassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
-              <span className="floating-label">Re-enter your Password</span>
-              <span
-                className="eye-icon"
-                onClick={() => setRePasswordVisible(!rePasswordVisible)}
-              >
-                <img
-                  src={rePasswordVisible ? hidePasswordIcon : showPasswordIcon}
-                  alt={rePasswordVisible ? "Hide Password" : "Show Password"}
-                />
-              </span>
-              {passwordError && (
-                <div className="error-text">{passwordError}</div>
-              )}
-            </div>
-            <div className="inputBox ">
-              <select
-                id="role"
-                name="role"
-                className="role-select"
-                required
+
+              <TextField
+                select
+                fullWidth
+                label="I am a"
                 value={role}
-                onChange={handleRoleChange}
+                onChange={(e) => setRole(e.target.value)}
+                margin="dense"
+                helperText="Admin accounts are created by the system, not self-registered."
               >
-                <option value="Customer">Customer</option>
-                <option value="Admin">Admin</option>
-                <option value="Gardener">Gardener</option>
-              </select>
-            </div>
+                <MenuItem value="Customer">Customer</MenuItem>
+                <MenuItem value="Gardener">Gardener</MenuItem>
+              </TextField>
 
-            {/* Added error message display */}
-            {registrationError && (
-              <div className="error-text text-red-500 mb-4">
-                {registrationError}
-              </div>
-            )}
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={submitting}
+                sx={{ mt: 2, py: 1.3, textTransform: "none", fontWeight: 600, fontSize: "1rem" }}
+              >
+                {submitting ? <CircularProgress size={24} color="inherit" /> : "Create account"}
+              </Button>
+            </Box>
 
-            <div className="sign-up-button-container">
-              <button type="submit" className="sign-up-button">
-                Sign Up
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+            <Typography variant="body2" sx={{ textAlign: "center", mt: 2.5, color: "text.secondary" }}>
+              Already have an account?{" "}
+              <MuiLink
+                component="button"
+                type="button"
+                onClick={() => navigate("/login")}
+                underline="hover"
+                sx={{ fontWeight: 600 }}
+              >
+                Sign in
+              </MuiLink>
+            </Typography>
+          </Box>
+        </Paper>
+      </Box>
+    </ThemeProvider>
   );
 };
+
 export default Register;
-
-

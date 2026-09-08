@@ -3,10 +3,10 @@ import './AboutUs.css';
 import './AboutUs-Modules/mobiledevices.css';
 import { detectScroll } from './Home-Modules/detect';
 import useLockVerticalPosition from './AboutUs-Modules/lockVerticalPosition';
-import bgImage1 from '../modules/Design/billion-trees.jpg';
-import bgImage2 from '../modules/Design/billion-trees1.jpg';
-import bgImage3 from '../modules/Design/billion-trees2.jpg';
-import bgImage4 from '../modules/Design/billion-trees3.jpg';
+import bgImage1 from '../Modules/Design/billion-trees.jpg';
+import bgImage2 from '../Modules/Design/billion-trees1.jpg';
+import bgImage3 from '../Modules/Design/billion-trees2.jpg';
+import bgImage4 from '../Modules/Design/billion-trees3.jpg';
 import Mission from './AboutUs-Modules/Mission'; // Import the Mission component
 
 const AboutUs = () => {

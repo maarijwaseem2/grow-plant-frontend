@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../config";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "react-toastify";
@@ -18,7 +19,7 @@ const ProductDetail = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const baseUrl = "http://localhost:3000/uploads/";
+  const baseUrl = `${API_BASE_URL}/uploads/`;
   useEffect(() => {
     const fetchData = async () => {
       try {

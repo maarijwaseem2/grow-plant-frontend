@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from "../../config";
 import axios from "axios";
 
 function App() {
@@ -12,7 +13,7 @@ function App() {
       console.log("Token in GardenerDashboard:", token);
       try {
         const res = await axios.get(
-          "http://localhost:3000/services/gardener/tasks",
+          `${API_BASE_URL}/services/gardener/tasks`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -41,7 +42,7 @@ function App() {
   const updateStatus = async (taskId, status) => {
     try {
       await axios.patch(
-        `http://localhost:3000/services/gardener/tasks/${taskId}/status`,
+        `${API_BASE_URL}/services/gardener/tasks/${taskId}/status`,
         { status },
         {
           headers: {

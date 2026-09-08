@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../config";
 import { X } from "lucide-react";
 import axios from "axios";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
@@ -45,7 +46,7 @@ const PaymentForm = ({ totalPrice, onClose, onPaymentSuccess }) => {
   const fetchUserDetails = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/user", {
+      const response = await axios.get(`${API_BASE_URL}/user`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -127,7 +128,7 @@ const PaymentForm = ({ totalPrice, onClose, onPaymentSuccess }) => {
       }
 
       const { data } = await axios.post(
-        "http://localhost:3000/payments",
+        `${API_BASE_URL}/payments`,
         {
           amount: totalPrice,
           paymentMethod,

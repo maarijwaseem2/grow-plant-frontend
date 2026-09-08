@@ -4,10 +4,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import "./ReforestationPage.css";
 
 // Import your images
-import stopDeforestationIcon from "../../modules/Icons/deforestation.PNG";
-import fightClimateChangeIcon from "../../modules/Icons/climate-change.PNG";
-import supportLocalCommunitiesIcon from "../../modules/Icons/local-communities.PNG";
-import worldMapImage from "../../modules/images/map.PNG";
+import stopDeforestationIcon from "../../Modules/Icons/deforestation.PNG";
+import fightClimateChangeIcon from "../../Modules/Icons/climate-change.PNG";
+import supportLocalCommunitiesIcon from "../../Modules/Icons/local-communities.PNG";
+import worldMapImage from "../../Modules/images/map.PNG";
 
 const ReforestationPage = () => {
   return (

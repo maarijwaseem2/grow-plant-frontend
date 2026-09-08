@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getMessaging, onMessage } from 'firebase/messaging';
-import { messaging } from '/src/firebase'; // ✅ Correct
+import { messaging } from '../Firebase';
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);

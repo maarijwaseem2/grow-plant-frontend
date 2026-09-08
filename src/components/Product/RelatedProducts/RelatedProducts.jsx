@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../../../config";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import "./RelatedProducts.css";
@@ -16,7 +17,7 @@ const RelatedProducts = ({ setSelectedProductID, selectedProductID }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { id } = useParams();
-  const baseUrl = "http://localhost:3000/uploads/";
+  const baseUrl = `${API_BASE_URL}/uploads/`;
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
@@ -29,7 +30,7 @@ const RelatedProducts = ({ setSelectedProductID, selectedProductID }) => {
 
         // Fetch all products first
         const allProductsResponse = await axios.get(
-          "http://localhost:3000/plants"
+          `${API_BASE_URL}/plants`
         );
 
         console.log("All Products Full Response:", allProductsResponse.data);
@@ -48,7 +49,7 @@ const RelatedProducts = ({ setSelectedProductID, selectedProductID }) => {
 
         // Fetch the specific product details
         const productResponse = await axios.get(
-          `http://localhost:3000/plants/${productId}`
+          `${API_BASE_URL}/plants/${productId}`
         );
 
         console.log("Current Product Response:", productResponse.data);

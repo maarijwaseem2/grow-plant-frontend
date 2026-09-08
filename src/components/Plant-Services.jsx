@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
+import { API_BASE_URL } from "../config";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
@@ -34,7 +35,7 @@ const PlantService = ({ products }) => {
   useEffect(() => {
     const fetchPlants = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/plants");
+        const response = await axios.get(`${API_BASE_URL}/plants`);
         setPlants(response.data.data);
         console.log(plants);
         setIsDataLoaded(true); // Mark as loaded
@@ -99,7 +100,7 @@ const PlantService = ({ products }) => {
   
   
       // Simple POST (agar image nahi bhej rahe)
-      const res = await axios.post("http://localhost:3000/services", payload);
+      const res = await axios.post(`${API_BASE_URL}/services`, payload);
   
       toast.success("Service booked successfully!");
       // Redirect ya state reset karo

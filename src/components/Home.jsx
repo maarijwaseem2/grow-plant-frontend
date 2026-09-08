@@ -4,9 +4,9 @@ import './Home-Modules/screensizes.css';
 import './Home-Modules/BoxLayout.css';
 import colors from './Home-Modules/colors';
 import updateBackgroundSize from './Home-Modules/backgroundHandler';
-import op1 from '../modules/background/op-1.jpg';
-import po from '../modules/background/po.jpg';
-import globe from '../modules/Pictures/globe.png'; // Import the globe image
+import op1 from '../Modules/background/op-1.jpg';
+import po from '../Modules/background/po.jpg';
+import globe from '../Modules/Pictures/globe.png'; // Import the globe image
 import updateBackgroundBelowGlobeSize from './Home-Modules/backgroundBelowGlobeHandler';
 import ReforestationPage from './Home-Modules/ReforestationPage'; 
 

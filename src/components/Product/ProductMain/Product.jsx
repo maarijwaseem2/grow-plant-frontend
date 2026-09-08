@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from "../../../config";
 import axios from "axios";
 import Tooltip from "@mui/material/Tooltip";
 import Zoom from "@mui/material/Zoom";
@@ -15,7 +16,7 @@ const Product = ({ selectedProductID, setSelectedProductID }) => {
   const [highlightedColor, setHighlightedColor] = useState("#C8393D");
   const { addToCart, cart } = useCart();
   const { id } = useParams();
-  const baseUrl = "http://localhost:3000/uploads/";
+  const baseUrl = `${API_BASE_URL}/uploads/`;
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -23,7 +24,7 @@ const Product = ({ selectedProductID, setSelectedProductID }) => {
         const productId = id || selectedProductID;
         if (productId) {
           const response = await axios.get(
-            `http://localhost:3000/plants/${productId}`
+            `${API_BASE_URL}/plants/${productId}`
           );
           setProduct(response.data.data);
         }
@@ -83,7 +84,7 @@ const Product = ({ selectedProductID, setSelectedProductID }) => {
       try {
         // Temporarily reserve stock
         await axios.patch(
-          `http://localhost:3000/plants/${product.id}/reserve`,
+          `${API_BASE_URL}/plants/${product.id}/reserve`,
           {
             quantity: quantity,
           }

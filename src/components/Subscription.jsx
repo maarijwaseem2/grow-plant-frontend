@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { API_BASE_URL } from "../config";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CheckIcon } from "@heroicons/react/20/solid";
 import { PhotoIcon } from "@heroicons/react/24/outline";
@@ -150,7 +151,7 @@ const Subscription = () => {
 
       // Send the request with the image and form data
       const response = await axios.post(
-        "http://localhost:3000/services",
+        `${API_BASE_URL}/services`,
         formData,
         {
           headers: {
@@ -193,7 +194,7 @@ const Subscription = () => {
 
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/user", {
+        const response = await axios.get(`${API_BASE_URL}/user`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },

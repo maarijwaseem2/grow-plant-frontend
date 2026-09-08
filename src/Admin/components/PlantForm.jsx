@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import React, { useState, useRef } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
@@ -32,7 +33,7 @@ const PlantForm = ({ onSubmit, initialData }) => {
 
       // Send formData using Axios
       const response = await axios.post(
-        "http://localhost:3000/plants",
+        `${API_BASE_URL}/plants`,
         formData,
         {
           headers: {

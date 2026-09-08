@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../config";
 import "./CartPage.css";
 import { MdOutlineClose } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
-import success from "../Assets/success.png";
+import success from "../assets/success.png";
 import { useCart } from "../context/CartContext";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
@@ -57,7 +58,7 @@ const ShoppingCart = () => {
   const [databaseOrderId, setDatabaseOrderId] = useState([]);
   const [error, setError] = useState();
 
-  const baseUrl = "http://localhost:3000/uploads/";
+  const baseUrl = `${API_BASE_URL}/uploads/`;
   useEffect(() => {
     if (!localStorage.getItem("orderNumber")) {
       localStorage.setItem("orderNumber", orderNumber);
@@ -148,7 +149,7 @@ const ShoppingCart = () => {
     try {
       for (const item of cartItems) {
         await axios.patch(
-          `http://localhost:3000/plants/${item.productID}/purchase`,
+          `${API_BASE_URL}/plants/${item.productID}/purchase`,
           {
             quantity: item.quantity,
           }
@@ -318,7 +319,7 @@ const ShoppingCart = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/order",
+        `${API_BASE_URL}/order`,
         orderData,
         {
           headers: {
@@ -362,7 +363,7 @@ const ShoppingCart = () => {
 
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/user", {
+        const response = await axios.get(`${API_BASE_URL}/user`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
