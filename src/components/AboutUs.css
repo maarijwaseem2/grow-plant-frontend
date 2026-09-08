@@ -1,0 +1,56 @@
+body {
+  overflow-x: hidden; /* Hide horizontal scrollbar */
+}
+
+.full-screen-background {
+  -webkit-user-select: none; /* For Safari */
+  -moz-user-select: none; /* For Firefox */
+  -ms-user-select: none; /* For Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Opera, and Edge */
+  background-size: cover; /* Cover the entire area */
+  background-position: center; /* Center the image */
+  min-height: 950px; /* Set a minimum height if necessary */
+  height: 100vh; /* Set to full viewport height */
+  width: 100%; /* Full width */
+  display: flex; /* Use flexbox */
+  align-items: center; /* Vertically center the content */
+  justify-content: center; /* Horizontally center the content */
+  position: relative; /* Ensure stacking context */
+  z-index: -1;
+}
+
+.text-content {
+  position: absolute; /* Position it absolutely within the flex container */
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Adjust for the element's width/height */
+  backdrop-filter: blur(5px); /* Optional: add a blur effect to the text background */
+  padding: 20px 80px !important; /* Reduce vertical padding to decrease height while keeping width */
+  border-radius: 10px; /* Optional: rounded corners */
+  background: rgba(158, 158, 158, 0.5); /* Semi-transparent background */
+  align-items: center; /* Vertically center the content */
+  justify-content: center; /* Horizontally center the content */
+  text-align: center; /* Center the text inside */
+  z-index: 1;
+}
+
+.text-content h1 {
+  font-family: 'Patrick Hand', cursive; /* Ensure the font is applied to h1 and p */
+  font-size: 80px; /* Reduce font size to decrease height */
+  line-height: 1.2; /* Adjust line height for compactness */
+  margin: 10px 0; /* Reduce margins between elements */
+  letter-spacing: 15px; /* Add spacing between letters */
+}
+
+.text-content p {
+  font-family: 'Patrick Hand', cursive; /* Ensure the font is applied to h1 and p */
+  font-size: 18px; /* Reduce font size for compactness */
+  line-height: 1.5; /* Adjust line height for readability */
+  margin: 10px 0; /* Reduce margin to decrease overall height */
+}
+
+.smaller-text {
+  font-family: 'Patrick Hand', cursive; /* Ensure the font is applied to h1 and p */
+  font-weight: 300;
+}
+

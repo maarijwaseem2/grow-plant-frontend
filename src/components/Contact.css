@@ -1,0 +1,100 @@
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap");
+
+/* Prevent text selection globally */
+* {
+  user-select: none; /* For most browsers */
+  -webkit-user-select: none; /* For Safari */
+  -moz-user-select: none; /* For Firefox */
+  -ms-user-select: none; /* For Internet Explorer/Edge */
+}
+
+.contact-container {
+  background-color: rgb(28, 34, 28); /* Custom background color */
+  overflow: hidden;
+}
+
+h1.text-white {
+  font-family: "Lora", serif;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .plant-treetext {
+    text-align: left !important;
+  }
+}
+
+.sideways-text {
+  font-family: Montserrat, sans-serif !important;
+  transform: rotate(-90deg);
+  white-space: nowrap;
+  display: flex;
+  justify-content: center !important; 
+  align-items: center !important;
+  height: 100%;
+  width: 100%;   
+  color: rgb(34, 34, 34); 
+}
+
+.tree-plant {
+  height: 700px !important;
+}
+
+.bottom-align {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;  /* Pushes the content to the bottom */
+}
+
+.contact-us-heading {
+  margin-top: 160px; /* Adjust the value as needed */
+}
+
+.design-underline {
+  margin-top: 50px !important;
+  width: 135px !important;
+  height: 2px !important;
+}
+
+.hear-text {
+  margin-top: 30px !important;
+  color: rgb(126, 126, 126);
+}
+
+.info-box {
+  background-color: white; /* Set light background color */
+  border: 1px solid #9e9b9b; /* Optional: border around the box */
+  display: flex; /* Use flexbox to center content */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  font-family: 'Montserrat', sans-serif; /* Consistent font */
+  color: #000000; /* Text color */
+  text-align: center; /* Center text horizontally in the box */
+  margin-top: 40px !important; /* Remove margin for consistent positioning */
+  overflow: hidden; /* Prevent overflow */
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition for color change */
+}
+
+.info-box p {
+  margin: 0; /* Remove any default margin */
+  font-family: 'Montserrat', sans-serif;
+  overflow: hidden; /* Prevent text from overflowing */
+  text-overflow: ellipsis; /* Add ellipsis if text is too long */
+  white-space: nowrap; /* Prevent text from wrapping */
+  color: black; /* Default text color */
+  transition: color 0.3s; /* Smooth transition for text color */
+}
+
+.info-box:hover {
+  background-color: black; /* Change background on hover */
+  color: white; /* Change text color to white on hover */
+  cursor: pointer; /* Change cursor to pointer */
+}
+
+.info-box:hover p {
+  color: white; /* Change text color of the p tag to white on hover */
+}
+

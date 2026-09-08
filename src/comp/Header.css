@@ -1,0 +1,339 @@
+/* General Reset */
+* {
+    box-sizing: border-box;
+    font-family: Jost, sans-serif;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+header {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    background-color: transparent;
+    overflow: hidden;
+}
+
+/* Top Header Box */
+.top-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ffffff;
+    padding: 3px 24px;
+    border-bottom: 1px solid rgb(201, 199, 199);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+    background-color: transparent; /* Default background */
+    transition: background-color 0.3s ease; /* Smooth transition for background color */
+    cursor: default;
+}
+
+/* Bottom Header Box */
+.bottom-box {
+    display: flex;
+    align-items: center;
+    padding: 9px 24px;
+    position: fixed;
+    top: 24px;
+    left: 0;
+    width: 100%;
+    z-index: 5;
+    background-color: transparent; /* Default background */
+    transition: background-color 0.3s ease; /* Smooth transition for background color */
+    cursor: default;
+}
+
+/* Apply hover effect when either box is hovered */
+.top-box.hovered,
+.bottom-box.hovered {
+    color: black; /* Change text color to black when hovered */
+    background-color: white; /* Change background to white on hover */
+}
+
+.bottom-box.hovered {
+    border-bottom: 1px solid rgb(201, 199, 199);
+}
+
+/* Delivery text style */
+.delivery-text {
+    font-size: clamp(10px, 2vw, 11px);
+    white-space: nowrap;
+    opacity: 0.8;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    color: white; /* Default color */
+    transition: color 0.3s ease;
+}
+
+.delivery-text:hover {
+    opacity: 1;
+    transform: scale(1.05);
+    margin-left: 8px;
+}
+
+/* Authentication links style */
+.auth-links {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    margin-right: 15px;
+    opacity: 0.8;
+}
+
+.auth-links div {
+    font-size: 11.5px;
+    color: white;
+    cursor: pointer;
+    transition: color 0.3s ease; /* Smooth transition for color change */
+}
+
+.auth-links div:hover {
+    text-decoration: underline;
+    font-weight: bolder !important;
+}
+
+/* Logo Text Style */
+.logo-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: white; /* Default color */
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3), 4px 4px 0 rgba(0, 0, 0, 0.2);
+    transition: color 0.3s ease; /* Smooth transition for color change */
+}
+
+.logo-text:hover {
+    cursor: pointer;
+}
+
+/* Navigation Links Style */
+.nav-links {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 15px;
+    position: fixed;
+    left: 195px;
+    top: 39px;
+    z-index: 1000;
+    color: white; /* Default color */
+    transition: color 0.3s ease;
+}
+
+.nav-links div {
+    position: relative; /* Added for relative positioning of pseudo-element */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    opacity: 0.6;
+    cursor: pointer;
+    transition: color 0.3s ease; /* Smooth transition for color change */
+}
+
+/* Underline effect only for individual nav links */
+.nav-links div::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #1b1b1b;
+    transition: width 0.3s ease-out;
+}
+
+.nav-links div:hover::after {
+    width: 70%; /* Underline width will span the width of the text */
+    transition-delay: 0.1s;
+}
+
+/* Navigation link hover effect */
+.nav-links div:hover {
+    color: black; /* Change to black on hover */
+    opacity: 1;   /* Full opacity on hover */
+}
+
+/* Change color to black when hovered */
+.top-box.hovered .delivery-text,
+.top-box.hovered .auth-links div,
+.bottom-box.hovered .logo-text,
+.bottom-box.hovered .nav-links div {
+    color: black; /* Change text color to black on hover */
+}
+
+/* Remove underline from dropdown items */
+.dropdown-menu .dropdown-item {
+    text-decoration: none; /* Ensure no underline for dropdown items */
+    color: #333;
+    background: none; /* Ensure no background highlight */
+    position: relative; /* Ensure we don't affect other styles */
+}
+
+/* Ensure that the dropdown items do not show underlines */
+.dropdown-menu .dropdown-item::after {
+    content: none; /* Remove the underline (no pseudo-element) */
+}
+
+/* Remove the hover underline effect for dropdown items */
+.dropdown-menu .dropdown-item:hover::after {
+    content: none; /* Ensure no underline effect on hover */
+    width: 0; /* Make sure the underline doesn't appear */
+}
+
+/* Optional: If you want to keep the hover effect color for the dropdown */
+.dropdown-menu .dropdown-item:hover {
+    color: #38b2ac;
+}
+
+/* Vertical line style */
+.vertical-line {
+    width: 1px;
+    height: 15px;
+    background-color: #ffffff; /* Default color */
+    transition: background-color 0.3s ease; /* Smooth transition for background color */
+    cursor: default;
+}
+
+.vertical-line:hover {
+    cursor: default;
+}
+
+/* Change vertical line color to black on hover */
+.top-box.hovered .vertical-line,
+.bottom-box.hovered .vertical-line {
+    background-color: black; /* Change to black on hover */
+}
+
+/* Dropdown menu style */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    width: 200px;
+}
+
+.dropdown-menu li {
+    padding: 11px;
+}
+
+/* Services link container and dropdown */
+.services-link-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.services-link-container::after {
+    content: '▼';
+    font-size: 10px;
+    color: #00ff00;
+    margin-left: 6px; /* Moves the arrow to the right of the text */
+    transition: transform 0.3s ease;
+}
+
+.services-link-container:hover::after {
+    transform: rotate(180deg); /* Optionally, you can rotate the arrow when the dropdown is open */
+}
+
+.services-link-container:hover .dropdown-menu {
+    display: block; /* Show dropdown when the services link is hovered */
+}
+
+/* Change arrow color when hovered */
+.services-link-container:hover::after,
+.top-box.hovered ~ .bottom-box .services-link-container::after,
+.bottom-box.hovered ~ .top-box .services-link-container::after {
+    color: black;
+}
+
+/* Add hover effect for all items in top and bottom box */
+.top-box:hover .delivery-text,
+.top-box:hover .auth-links div,
+.bottom-box:hover .logo-text,
+.bottom-box:hover .nav-links div,
+.top-box:hover .vertical-line,
+.bottom-box:hover .vertical-line {
+    color: black; /* Ensure color change on hover */
+}
+
+.top-box:hover .vertical-line,
+.bottom-box:hover .vertical-line {
+    background-color: black; /* Ensure vertical line changes to black */
+}
+
+.icon-container {
+    display: flex;
+    gap: 44px;
+    position: relative;  /* Keep it relative to the bottom-box */
+    margin-left: auto;   /* Push it to the right end of the container */
+}
+
+/* Adjust the cart icon style */
+.cart-icon {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    filter: brightness(1.3) invert(1); /* Brighter white by increasing brightness */
+    transition: filter 0.3s ease;
+    position: relative; /* Position relative for the cart badge */
+}
+
+/* Cart badge styling */
+.cart-badge {
+    position: absolute;
+    top: -6px !important;
+    right: 79px !important;
+    font-size: 12px;
+    background-color: #00ff00 !important; /* Red color */
+    color: white !important;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* User Icon style (new icon) */
+.notification-icon {
+    width: 23px; /* Adjust the size of the user icon */
+    height: 27px; /* Adjust the size of the user icon */
+    cursor: pointer;
+    filter: brightness(0) invert(1); /* Make the user icon white */
+    transition: filter 0.3s ease; /* Smooth transition for color change */
+    margin-top: 2px;
+    margin-right: 23px;
+}
+
+
+/* When either the top or bottom box is hovered, make the icons black */
+.top-box.hovered .cart-icon,
+.bottom-box.hovered .cart-icon,
+.top-box.hovered .notification-icon,
+.bottom-box.hovered .notification-icon {
+    filter: none; /* Remove the filter to return the icons to their original color (black) */
+}
+
+/* Optional: Add hover effect to the icons */
+.cart-icon:hover, .notification-icon:hover {
+    transform: scale(1.1); /* Slight scale-up effect for hover */
+}
+
+/* When either the top or bottom box is hovered, change the cart-badge color to black */
+.top-box.hovered .cart-badge,
+.bottom-box.hovered .cart-badge {
+    background-color: black !important; /* Change background to black */
+    color: white !important; /* Ensure the text remains white */
+}
+

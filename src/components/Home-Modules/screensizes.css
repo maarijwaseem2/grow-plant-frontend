@@ -1,0 +1,193 @@
+@media (max-width: 690px) and (min-width: 440px){
+    .elementor-heading-title {
+      display: flex;
+      flex-direction: column; /* Stack all words vertically */
+      align-items: center;
+      gap: 50px; /* Equal vertical spacing between words */
+    }
+  
+    .line-one,
+    .line-two {
+      display: flex;
+      flex-direction: column; /* Each word in its own line */
+      align-items: center;
+      gap: 50px; /* Equal spacing for small screens */
+      letter-spacing: 3px;
+    }
+  
+    .plant-text,
+    .a-text,
+    .tree-text,
+    .together-text {
+      display: block; /* Ensure each word is on its own line */
+      margin: 0; /* Remove unnecessary margins */
+      font-size: clamp(70px, 10vw, 80px); /* Gradually decrease from 80px to 30px */
+    }
+  
+    
+  .memory-text {
+    font-size: clamp(10px, 5vw, 40px);
+    padding-top: 50px;
+  }
+  }
+  
+  @media (max-width: 439px) and (min-width: 396px){
+    .elementor-heading-title {
+      display: flex;
+      flex-direction: column; /* Stack all words vertically */
+      align-items: center;
+      gap: 50px; /* Equal vertical spacing between words */
+    }
+  
+    .line-one,
+    .line-two {
+      display: flex;
+      flex-direction: column; /* Each word in its own line */
+      align-items: center;
+      gap: 50px; /* Equal spacing for small screens */
+      letter-spacing: 3px;
+    }
+  
+    .plant-text,
+    .a-text,
+    .tree-text,
+    .together-text {
+      display: block; /* Ensure each word is on its own line */
+      margin: 0; /* Remove unnecessary margins */
+      font-size: clamp(60px, 10vw, 80px); /* Gradually decrease from 80px to 30px */
+    }
+  
+    
+  .memory-text {
+    font-size: clamp(10px, 5vw, 40px);
+    padding-top: 50px;
+  }
+  }
+  
+  @media (max-width: 395px) and (min-width: 331px){
+    .elementor-heading-title {
+      display: flex;
+      flex-direction: column; /* Stack all words vertically */
+      align-items: center;
+      gap: 50px; /* Equal vertical spacing between words */
+    }
+  
+    .line-one,
+    .line-two {
+      display: flex;
+      flex-direction: column; /* Each word in its own line */
+      align-items: center;
+      gap: 50px; /* Equal spacing for small screens */
+      letter-spacing: 3px;
+  
+    }
+  
+    .plant-text,
+    .a-text,
+    .tree-text,
+    .together-text {
+      display: block; /* Ensure each word is on its own line */
+      margin: 0; /* Remove unnecessary margins */
+      font-size: clamp(50px, 10vw, 80px); /* Gradually decrease from 80px to 30px */
+    }
+  
+    
+  .memory-text {
+    padding-top: 50px;
+    font-size: clamp(10px, 5vw, 40px);
+  }
+  }
+  
+  @media (max-width: 330px) and (min-width: 200px){
+    .elementor-heading-title {
+      display: flex;
+      flex-direction: column; /* Stack all words vertically */
+      align-items: center;
+      gap: 50px; /* Equal vertical spacing between words */
+    }
+  
+    .line-one,
+    .line-two {
+      display: flex;
+      flex-direction: column; /* Each word in its own line */
+      align-items: center;
+      gap: 50px; /* Equal spacing for small screens */
+      letter-spacing: 3px;
+    }
+  
+    .plant-text,
+    .a-text,
+    .tree-text,
+    .together-text {
+      display: block; /* Ensure each word is on its own line */
+      margin: 0; /* Remove unnecessary margins */
+      font-size: clamp(40px, 10vw, 80px); /* Gradually decrease from 80px to 30px */
+    }
+  
+    
+  .memory-text {
+    padding-top: 50px;
+    font-size: clamp(10px, 5vw, 40px);
+  }
+  }
+
+  
+@media (max-width: 900px) {
+  .tree-globe {
+    width: 400px; /* Ensure it takes the full width */
+  }
+  
+  .tree-image {
+    max-width: 400px; /* Ensure the image is responsive */
+  }
+}
+
+@media (max-width: 410px) {
+  .tree-globe {
+    width: 320px; /* Ensure it takes the full width */
+  }
+  
+  .tree-image {
+    max-width: 320px; /* Ensure the image is responsive */
+  }
+}
+
+@media (max-width: 360px) {
+  .tree-globe {
+    width: 290px; /* Ensure it takes the full width */
+  }
+  
+  .tree-image {
+    max-width: 290px; /* Ensure the image is responsive */
+  }
+}
+
+@media (max-width: 320px) {
+  .tree-globe {
+    width: 260px; /* Ensure it takes the full width */
+  }
+  
+  .tree-image {
+    max-width: 260px; /* Ensure the image is responsive */
+  }
+}
+
+@media (max-width: 260px) {
+  .tree-globe {
+    width: 230px; /* Ensure it takes the full width */
+  }
+  
+  .tree-image {
+    max-width: 230px; /* Ensure the image is responsive */
+  }
+}
+
+@media (max-width: 230px) {
+  .tree-globe {
+    width: 200px; /* Ensure it takes the full width */
+  }
+  
+  .tree-image {
+    max-width: 200px; /* Ensure the image is responsive */
+  }
+}

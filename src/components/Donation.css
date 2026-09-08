@@ -1,0 +1,294 @@
+.Donate-Now {
+    color: white;
+    font-weight: 900 !important; /* Ensure that font-weight is applied with high specificity */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7), -2px -2px 4px rgba(0, 0, 0, 0.7); /* Adds black edges to the text */
+}
+
+.impact-env {
+    color: white;
+    font-family: 'Arial', sans-serif !important; /* Ensure correct font family and override styles */
+    font-weight: 700 !important; /* Ensure font weight for the description */
+    margin-top: 15px !important;
+    margin-bottom: 50px !important;
+}
+
+.first-box {
+    border-radius: 8px; /* Optional: Adds rounded corners to the boxes */
+    background-color: rgb(4, 164, 228);
+}
+
+.second-box {
+    border-radius: 8px; /* Optional: Adds rounded corners to the boxes */
+    background-color: rgb(230, 196, 0);
+}
+
+.third-box {
+    border-radius: 8px; /* Optional: Adds rounded corners to the boxes */
+    background-color: rgb(111, 238, 85);
+}
+
+/* Main container for the donation section */
+.donation-container {
+    position: relative;
+    min-height: 80vh; /* Minimum height is 80% of the viewport height */
+    width: 100%;
+    background-image: url('../modules/design/billion-trees3.jpg'); /* Ensure correct path */
+    background-size: cover; /* Cover the entire container without distortion */
+    background-position: center; /* Center the image */
+    background-attachment: fixed; /* Keep the background fixed while scrolling */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    overflow: hidden; /* Prevent overflow on smaller screens */
+  }
+  
+  /* Typography for the "Donate Now" heading */
+  .Donate-Now {
+    font-weight: bold;
+  }
+  
+  /* Description text styling */
+  .impact-env {
+    font-size: 1.25rem;
+  }
+  
+  /* Media query for screens with height less than or equal to 700px */
+  @media (max-height: 1080px) {
+    .donation-container {
+      background-attachment: scroll; /* Disable fixed attachment to avoid cutoff issues */
+      background-position: center top; /* Ensure the top part of the image is visible */
+      height: 700px; /* Fix the height to ensure the entire section remains visible */
+    }
+  }
+  
+  /* Main container for the donation section */
+.donation-container {
+  position: relative;
+  min-height: 80vh; /* Minimum height is 80% of the viewport height */
+  width: 100%;
+  background-image: url('../modules/design/billion-trees3.jpg'); /* Ensure correct path */
+  background-size: cover; /* Cover the entire container without distortion */
+  background-position: center; /* Center the image */
+  background-attachment: fixed; /* Keep the background fixed while scrolling */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  overflow: hidden; /* Prevent overflow on smaller screens */
+}
+
+/* Typography for the "Donate Now" heading with responsive font size using clamp */
+.Donate-Now {
+  @apply font-bold text-white;
+  font-size: clamp(2rem, 8vw, 6rem); /* Minimum 2rem, preferred 8vw, maximum 6rem */
+  line-height: 1.2;
+}
+
+/* Description text with responsive font size using clamp */
+.impact-env {
+  @apply text-white;
+  font-size: clamp(1rem, 3vw, 2.5rem); /* Minimum 1rem, preferred 3vw, maximum 2.5rem */
+}
+
+/* Media query for smaller screen sizes, to ensure font size doesn't get too small */
+@media (max-width: 600px) {
+  .Donate-Now {
+    font-size: clamp(2.5rem, 12vw, 5rem); /* Adjust the font size for very small screens */
+  }
+
+  .impact-env {
+    font-size: clamp(1.2rem, 5vw, 2rem); /* Increase font size for readability on small screens */
+  }
+}
+
+/* Default image size (for screens above 1505px) */
+.box img {
+    width: 7rem;  /* Default width for larger screens */
+    height: auto;
+    object-fit: contain;
+  }
+  
+  .box {
+    display: flex;
+    align-items: center; /* Center the content vertically */
+    justify-content: flex-start; /* Align the content to the start */
+    text-align: left; /* Ensure text is left aligned */
+    flex-shrink: 1; /* Allow box to shrink and adjust with screen size */
+    word-wrap: break-word; /* Break words if necessary */
+    overflow: hidden; /* Prevent overflow */
+    padding-left: 10px; /* Optional: Add some space from the left */
+  }
+  
+  /* Adjust font size inside the boxes dynamically */
+  .box span {
+    font-size: clamp(1.5rem, 4vw, 2.5rem); /* Adjust size based on viewport */
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide any overflowed text */
+    text-overflow: ellipsis; /* Add ellipsis if text overflows */
+  }
+
+  /* Smaller screens - 1505px and below */
+  @media (max-width: 1505px) {
+    .box img {
+      width: 3.5rem;  /* Reduce the image size */
+    }
+  
+    .box span {
+      font-size: 1.8rem;  /* Decrease text size */
+    }
+  }
+  
+  /* Even smaller screens - 1024px and below */
+  @media (max-width: 1024px) {
+    .box img {
+      width: 3rem;  /* Further reduce the image size */
+    }
+  
+    .box span {
+      font-size: 1.6rem;  /* Further decrease text size */
+    }
+  }
+
+    /* Even smaller screens - 1024px and below */
+    @media (max-width: 903px) {
+        .box img {
+          width: 3rem;  /* Further reduce the image size */
+          margin-bottom: 1rem;  /* Optional: space between image and text */
+        }
+      
+        .box span {
+          font-size: 1.4rem;  /* Further decrease text size */
+        }
+        .box {
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            align-items: center; /* Center items horizontally */
+            justify-content: flex-start; /* Align items at the top */
+            text-align: center; /* Ensure text is centered */
+        }
+      }
+  
+  @media (max-width: 768px) {
+    .box img {
+        width: 2rem;  /* Reduce to a smaller size */
+        margin-left: 0;  /* Remove left margin for centering */
+        margin-bottom: 1rem;  /* Optional: space between image and text */
+    }
+
+    .box span {
+        font-size: 1.2rem;  /* Reduce text size further */
+    }
+
+    /* Center the image horizontally at the top of the box */
+    .box {
+        display: flex;
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center items horizontally */
+        justify-content: flex-start; /* Align items at the top */
+        text-align: center; /* Ensure text is centered */
+    }
+}
+  
+  /* For mobile screens - 480px and below */
+  @media (max-width: 480px) {
+    .box img {
+      width: 1.7rem;  /* Final reduction for mobile screens */
+    }
+  
+    .box span {
+      font-size: 1rem;  /* Final text size reduction */
+    }
+  }
+  
+    /* For mobile screens - 480px and below */
+    @media (max-width: 430px) {
+        .box img {
+          width: 1.5rem;  /* Final reduction for mobile screens */
+        }
+      
+        .box span {
+            margin-left: -1px !important;
+          font-size: 0.7rem;  /* Final text size reduction */
+        }
+      }
+      
+      .slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 2px;
+        background: #000000;
+        outline: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px; /* Width of the thumb */
+        height: 20px; /* Height of the thumb */
+        background: #00fd5d; /* Green Thumb */
+        border: none;
+        cursor: pointer;
+      }
+      
+      .slider::-moz-range-thumb {
+        width: 20px; /* Width of the thumb */
+        height: 20px; /* Height of the thumb */
+        background: #22c55e; /* Green Thumb */
+        border: none;
+        cursor: pointer;
+      }
+      
+      .donate-plant {
+        color: #08411d;
+        font-weight: 600 !important;
+      }
+
+      .donation-text {
+        font-weight: lighter !important;
+        font-size: 21px;
+      }
+
+      .cost-text {
+        color: #08411d !important;
+        font-weight: 500 !important;
+      }
+
+      .donate-button {
+        background: #00fd5d;
+        font-weight: 700 !important;
+        cursor: pointer; /* Default cursor when hovered over */
+        transition: transform 0.2s ease-in-out; /* Smooth transition for cursor scale */
+    }
+    
+    /* Increase cursor size on hover */
+    .donate-button:hover {
+        transform: scale(1.3); /* Scales up the cursor on hover */
+    }
+
+    @media (max-width: 358px) {
+        .donation-text,
+        .cost-text {
+        }
+    
+        .donate-button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        }
+
+        .donate-button {
+            margin-left: 30px;
+        }
+    
+        .cost-text {
+        font-size: 18px; /* Adjust font size for small screens */
+        }
+  }
+  

@@ -1,0 +1,71 @@
+/* Custom CSS Styles */
+
+@import url("https://unpkg.com/leaflet/dist/leaflet.css");
+.container {
+  max-width: 1200px;
+}
+
+h2 {
+  font-family: "Arial", sans-serif;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Ensure it's above other elements */
+}
+
+.card {
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.img-fluid {
+  max-height: 400px; /* Limit image height */
+  object-fit: cover; /* Maintain aspect ratio */
+}
+
+.shadow {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.rounded {
+  border-radius: 10px; /* More rounded corners */
+}
+/* Add this in your App.css or index.css */

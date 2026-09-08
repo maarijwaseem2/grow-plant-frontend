@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap');
+
+:root {
+    --grow-text-right: 20px; /* Default value for positioning the GROW text */
+}
+
+.background-below-globe {
+    min-height: 800px;
+    width: 100%;
+    height: auto;
+    background-image: url('../../Modules/background/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-top: 20px;
+    z-index: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.glass-box {
+    width: 50%; /* 50% width of the background-below-globe */
+    height: 100%; /* Full height of the parent container */
+    position: absolute; /* Position absolute to place it */
+    top: 0; /* Align to the top */
+    left: 0; /* Align to the left side */
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Border to enhance the glass effect */
+    padding: 20px; /* Padding inside the box */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow to make it stand out */
+    color: #000; /* Set text color */
+    display: flex; /* Flexbox for content alignment */
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center; /* Center elements horizontally */
+    justify-content: center; /* Center elements vertically */
+}
+
+.glass-box-text {
+    font-family: 'Lexend', sans-serif;
+    font-weight: 600;
+    text-align: right; /* Right-align text inside the container */
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end; /* Align to the right of the box */
+}
+
+.grow-text,
+.any-text,
+.where-text {
+    font-family: 'Lexend', sans-serif;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    font-size: clamp(30px, 10vw, 180px) !important; /* Adjusted font size for better scaling */
+    background-size: cover;
+    background-position: center;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: absolute;
+    margin: 0;
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+/* Align GROW text */
+.grow-text {
+    top: calc(30% + 2vh); /* Adjust vertical spacing dynamically with viewport height */
+    transform: translateY(-50%);
+    right: calc(var(--grow-text-right) - 0.2ch); /* Use the CSS variable for dynamic position */
+}
+
+/* Align ANY text so "A" starts where "R" of GROW starts */
+.any-text {
+    top: calc(50% + 2vh); /* Adjust vertical positioning with dynamic space */
+    transform: translateY(-50%);
+    right: calc(var(--grow-text-right) + 0.6ch); /* Offset dynamically based on GROW text's right */
+}
+
+/* Align WHERE text */
+.where-text {
+    top: calc(70% + 2vh); /* Adjust vertical spacing dynamically with viewport height */
+    transform: translateY(-50%);
+    right: calc(var(--grow-text-right) - 0.3ch); /* Use the CSS variable for dynamic position */
+}
+
+.slider-controls {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    z-index: 1000;
+    top: 92%;
+}
+
+.arrow-btn {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;  /* Reduced padding */
+    margin: 0 15px;  /* Reduced margin between buttons */
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.arrow-btn:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+@media (max-width: 700px) {
+    .grow-text,
+    .any-text,
+    .where-text {
+        font-size: clamp(50px, 8vw, 120px) !important; /* Adjusted font size */
+    }
+    .grow-text {
+        top: calc(40% + 4vh); /* Dynamic top value to avoid text cropping */
+    }
+    .any-text {
+        top: calc(50% + 4vh); /* Dynamic top value to avoid text cropping */
+    }
+    .where-text {
+        top: calc(60% + 4vh); /* Dynamic top value to avoid text cropping */
+    }
+    
+}
+
+@media (max-width: 650px) {
+    .grow-text {
+        top: calc(40% + 4vh); /* Dynamic top value to avoid text cropping */
+    }
+    .any-text {
+        top: calc(50% + 4vh); /* Dynamic top value to avoid text cropping */
+    }
+    .where-text {
+        top: calc(60% + 4vh); /* Dynamic top value to avoid text cropping */
+    }
+    .grow-text {
+        right: calc(var(--grow-text-right) - 0.7ch); /* Use the CSS variable for dynamic position */
+    }
+
+    .any-text {
+        right: calc(var(--grow-text-right) - 0.3ch); /* Offset dynamically based on GROW text's right */
+    }
+
+    .where-text {
+        right: calc(var(--grow-text-right) - 0.7ch); /* Use the CSS variable for dynamic position */
+    }
+}
+
+@media (max-width: 400px) {
+    .grow-text,
+    .any-text,
+    .where-text {
+        font-size: clamp(45px, 8vw, 120px) !important; /* Adjusted font size */
+    }
+    .grow-text {
+        right: calc(var(--grow-text-right) - 0.7ch); /* Use the CSS variable for dynamic position */
+    }
+
+    .any-text {
+        right: calc(var(--grow-text-right) + 0.1ch); /* Offset dynamically based on GROW text's right */
+    }
+
+    .where-text {
+        right: calc(var(--grow-text-right) - 0.8ch); /* Use the CSS variable for dynamic position */
+    }
+}
+
+@media (max-width: 330px) {
+    .grow-text,
+    .any-text,
+    .where-text {
+        font-size: clamp(35px, 8vw, 120px) !important; /* Adjusted font size */
+    }
+    .grow-text {
+        right: calc(var(--grow-text-right) - 1ch); /* Use the CSS variable for dynamic position */
+    }
+
+    .any-text {
+        right: calc(var(--grow-text-right) - 0.3ch); /* Offset dynamically based on GROW text's right */
+    }
+
+    .where-text {
+        right: calc(var(--grow-text-right) - 0.9ch); /* Use the CSS variable for dynamic position */
+    }
+}

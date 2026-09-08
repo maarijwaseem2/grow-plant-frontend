@@ -1,0 +1,223 @@
+.dropdown-menu {
+  z-index: 1000; /* A high value to make sure it stays on top */
+  position: absolute; /* Ensure it's positioned relative to the container */
+}
+
+/* Ensure the map container doesn't override the dropdown menu */
+.map-container {
+  position: relative; /* Add this to ensure map respects stacking context */
+  z-index: 1; /* Lower than the dropdown menu */
+  top: -5px;
+  height: 101%;
+}
+
+.grouper-container input {
+  border: 1px solid black; /* Black border */
+  border-radius: 4px; /* Optional: Adds rounded corners */
+  padding: 8px; /* Adjust padding to suit your design */
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.input-error {
+  border: 2px solid red; /* Red border when location not found */
+  animation: shake 0.5s ease-in-out; /* Shake animation */
+}
+
+.suggestions-list {
+  z-index: 10; /* Ensures the suggestions are above other elements */
+  width: 100%; /* Full width */
+  max-height: 200px; /* Limit height of the dropdown */
+  overflow-y: auto; /* Add scroll when the list is long */
+  background-color: white; /* White background */
+  border: 1px solid #ccc; /* Border color */
+  border-radius: 5px; /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Shadow effect */
+  margin-top: 5px; /* Small space between input and suggestions */
+  margin-bottom: 5px; /* Optional: Space below the suggestion list */
+}
+
+/* Styling each list item in the dropdown */
+.suggestions-list li {
+  padding: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Hover effect for suggestion items */
+.suggestions-list li:hover {
+  background-color: #f1f1f1;
+}
+
+/* PlantServed.css */
+
+/* Add this class to make container 1 scrollable */
+.scrollable-container {
+  height: 100%; /* Ensure it's taking full height */
+}
+
+.fixed-container {
+  position: fixed; /* Fixed position for the second container */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10; /* Ensure it's on top of other elements */
+}
+
+/* Add hover effect to the button */
+.remove-button {
+  transition: transform 0.3s ease; /* Smooth transition for scaling */
+}
+
+.remove-button:hover {
+  transform: scale(1.2); /* Increase size when hovered */
+}
+
+/* Add hover effect to the + and - buttons */
+.subtracted-button,
+.addition-button {
+  transition: transform 0.3s ease; /* Smooth transition for scaling */
+}
+
+.subtracted-button:hover,
+.addition-button:hover {
+  transform: scale(1.2); /* Increase size when hovered */
+}
+
+.subscription-btn,
+.no-subscription-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border: 1px solid black;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1rem; /* Default font size */
+}
+
+.subscription-btn:hover,
+.no-subscription-btn:hover {
+  background-color: #00fd5d;
+}
+
+.subscription-btn.selected,
+.no-subscription-btn.selected {
+  background-color: lightgreen;
+}
+.subscription-btn.selected:hover,
+.no-subscription-btn.selected {
+  background-color: #00fd5d;
+}
+
+.subscribed-text:hover,
+.no-subscribed-text:hover {
+  cursor: pointer !important;
+}
+
+@media (max-width: 900px) {
+  .subscribed-text,
+  .no-subscribed-text {
+    font-size: 14px !important;
+  }
+}
+
+/* Make sure the group container is responsive */
+.grouper-container {
+  max-width: 100%; /* Ensure content does not overflow */
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) {
+  .map-container {
+    overflow: none !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .selector-map {
+    width: 100% !important;
+  }
+}
+
+.selector-map {
+  background-color: white;
+  top: 75px;
+}
+
+/* Styling for the subscription options */
+.subscription-options {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px; /* Reduced gap between the buttons */
+  margin-top: 16px; /* Optional: Adds spacing above the buttons */
+}
+
+/* Subscription and No-Subscription button styles */
+.subscription-btn,
+.no-subscription-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px 16px; /* Adjust padding to reduce size */
+  cursor: pointer;
+  border: 1px solid #ccc; /* Light border for a clean look */
+  transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth hover and click animations */
+  background-color: #f9f9f9; /* Light background */
+  font-size: 1rem; /* Adjusted font size */
+  font-weight: 600; /* Slightly bolder text for emphasis */
+  width: 45%; /* Adjust width for a smaller size */
+}
+
+/* Hover effect */
+.subscription-btn:hover,
+.no-subscription-btn:hover {
+  background-color: #e0e0e0; /* Subtle hover effect */
+  transform: scale(1.05); /* Slight zoom effect */
+}
+
+/* Hide the radio button */
+.subscription-btn input,
+.no-subscription-btn input {
+  display: none; /* Hide radio buttons */
+}
+
+/* Label style */
+.subscription-btn label,
+.no-subscription-btn label {
+  font-size: 1rem; /* Ensure the text is legible */
+  font-weight: 600; /* Bold text */
+  color: #333; /* Dark color for better readability */
+}
+
+/* Optional: Active/Selected state styles */
+.subscription-btn.selected,
+.no-subscription-btn.selected {
+  background-color: #2bff00; /* Green background for selected state */
+  color: white; /* White text when selected */
+  border-color: #4caf50; /* Match the border to the background */
+}
+
+.subscription-btn.selected:hover,
+.no-subscription-btn.selected:hover {
+  background-color: #45a049; /* Darker green on hover */
+}

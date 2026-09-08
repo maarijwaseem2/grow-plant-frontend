@@ -1,0 +1,185 @@
+.header {
+  position: absolute; /* Ensures the header stays on top */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10; /* Ensure it's always above other content */
+}
+
+
+.home-container {
+  margin-top: 0; /* Ensure no space between header and home */
+  padding-top: 0; /* Remove any padding at the top */
+  position: relative; /* Ensures it starts exactly from where header ends */
+  top: 0; /* Makes sure it starts from the top */
+  z-index: 1; /* To stay above the background or other elements */
+}
+
+.header:hover {
+  cursor: pointer;
+}
+
+.main-container,
+.header,
+.home-background,
+.centered-text {
+  -webkit-user-select: none; /* For Safari */
+  -moz-user-select: none; /* For Firefox */
+  -ms-user-select: none; /* For Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Opera, and Edge */
+}
+
+.home-background {
+  min-height: 955px; /* Adjust as per your design */
+  width: 100%;
+  height: auto;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: backgroundChange 20s infinite;
+  z-index: -1; /* Ensure this background stays behind other content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute; /* Make this position absolute to overlap behind the header */
+  top: 0; /* Align to the top */
+  left: 0; /* Align to the left */
+}
+
+@keyframes backgroundChange {
+  0% {
+      background-image: url('../modules/background/op-1.jpg');
+  }
+  50% {
+      background-image: url('../modules/background/op-1.jpg');
+  }
+  51% {
+      background-image: url('../modules/background/po.jpg');
+  }
+  100% {
+      background-image: url('../modules/background/po.jpg');
+  }
+}
+
+.main-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0; /* Remove any margin-top */
+  padding-top: 0; /* Remove any padding-top */
+  top: 0; /* Start the container directly below the header */
+  z-index: 1; /* Make sure the main content is above the background */
+}
+
+.centered-text h2 {
+  margin-top: 70px; /* Optional adjustment, can be fine-tuned */
+}
+
+.centered-text h4 {
+  margin-top: 50px; /* Optional adjustment */
+}
+
+.elementor-heading-title {
+  font-family: 'Lexend', sans-serif;
+  font-weight: 900 !important;
+  line-height: 1.2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  filter: blur(0.7px);
+  font-size: clamp(80px, 10vw, 140px); /* Dynamically adjust the font size between 80px and 140px */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-left: 10vw; /* Add padding on the left */
+  padding-right: 10vw; /* Add padding on the right */
+  box-sizing: border-box; /* Ensure padding is included in the total width */
+}
+
+.line-one {
+  display: flex;
+  justify-content: center; /* Center "PLANT A TREE" horizontally */
+}
+
+
+@media (min-width: 691px) {
+  .line-one {
+    display: flex;
+    justify-content: center; /* Center "PLANT A TREE" horizontally */
+    letter-spacing: -2px;
+    gap: 50px !important; /* Adjust this value to control the space between the words */
+  }
+
+  .line-one span {
+    display: inline-block; /* Ensure proper spacing for individual words */
+  }
+
+  .line-two {
+    margin-top: 5px; /* Add space between "TOGETHER" and "PLANT A TREE" */
+    letter-spacing: -2px;
+  }
+}
+
+.memory-text {
+  font-family: 'Lexend', sans-serif;
+  font-weight: 500;
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 40px;
+  line-height: 1.2;
+  padding-top: 20px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.below-background-text {
+  position: relative; /* Position relative to the container */
+}
+
+.nature-bring {
+  color: black;
+  font-weight: 500; /* Adjust the font weight */
+  font-family: 'Lexend', sans-serif; /* Apply Lexend font */
+  position: relative; /* Position relative to the container */
+  font-size: clamp(30px, 10vw, 60px) !important; /* Dynamically adjust the font size between 80px and 140px */
+  line-height: 1.4 !important;
+  z-index: 0; /* Ensure it appears above the background */
+  text-align: center; /* Center the text */
+  border-radius: 15px; /* Adjust the border radius as needed */
+  margin-top: 0; /* No top margin, place it immediately below */
+  margin-bottom: 0; /* Remove bottom margin */
+  padding: 15px; /* Add some padding for spacing */
+}
+
+.tree-globe {
+  display: flex; /* Use flexbox for alignment */
+  justify-content: center; /* Center the image horizontally */
+  width: 70%; /* Ensure it takes the full width */
+}
+
+.tree-image {
+  max-width: 45%; /* Ensure the image is responsive */
+  height: auto; /* Maintain the aspect ratio */
+  border-radius: 15px;
+  margin: 0; /* Remove margins to prevent shifting */
+  animation: rotateImage 10s infinite linear; /* Infinite loop of rotation */
+  transform-style: preserve-3d; /* Preserves 3D effect */
+  margin-top: -35px; /* Space between text and image */
+}
+
+@keyframes rotateImage {
+  from {
+      transform: rotateY(0deg); /* Starts the rotation at 0 degrees */
+  }
+  to {
+      transform: rotateY(360deg); /* Completes one full rotation */
+  }
+}
+
+
+

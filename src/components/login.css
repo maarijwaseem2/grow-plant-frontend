@@ -1,0 +1,490 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+.login-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+*
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+/* Default styles */
+.image-section {
+  width: 70%; /* Ensure the width adjusts with screen size */
+  background-size: cover; /* Ensure the image covers the container */
+  background-position: center; /* Center the image */
+  object-fit: cover; /* Ensure the image fits the container, covering its entire area */
+  display: block; /* Prevent floating issues */
+  height: 100vh; /* Set height to be equal to the viewport height */
+  overflow: hidden; /* Prevent image section from scrolling */
+}
+
+/* Default state for .group */
+.group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  margin-left: 0; /* Start with no margin on the left */
+  transition: margin-left 0.3s ease; /* Add a smooth transition for margin */
+  overflow-y: auto; /* Allow the grouper section to scroll vertically */
+}
+/* Ensure the parent container clips the overflowing content */
+.signin-section {
+  position: relative;
+  overflow: hidden; /* Prevent child from going outside */
+  height: 100vh; /* Optional, but makes sure the container takes full height */
+  overflow-y: auto; /* Allow scrolling on the signup section */
+}
+
+.signin-section {
+  position: relative;
+  overflow-y: auto; /* Allow vertical scrolling */
+  height: 100vh;
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0) scale(1);
+  }
+  to {
+    transform: translateX(-100%) scale(1);
+  }
+}
+
+.group.slide-out {
+  animation: slideOutLeft 1s forwards; /* Adjust duration as needed */
+}
+
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.group {
+  transform: scale(1); /* Default scale */
+}
+
+.group.slide-out {
+  transform: translateX(-100%) scale(1); /* Ensure scale is fixed during animation */
+}
+
+/* Apply scaling and repositioning when screen width is less than 1040px */
+@media (max-width: 1000px) {
+  .group-wrapper {
+    /* Center the group horizontally */
+    display: flex;
+    justify-content: flex-start;  /* Align to the start (left) */
+    align-items: flex-start;  /* Align items to the top */
+    width: 100%;  /* Ensure it takes up the full width */
+    padding-left: 10%;  /* Add padding from the left to move the group closer to the start */
+  }
+
+  .group {
+    transform-origin: top left; /* Ensure scaling happens from top-left */
+    width: 100%;  /* Maintain width at 100% to avoid stretching */
+  }
+
+  /* Optional: Further adjust sizes of texts or elements if necessary */
+  .sign-intext, .sign-uptext {
+    font-size: 14px; /* Adjust text size */
+  }
+
+  .inputBox input {
+    font-size: 14px; /* Adjust input text size */
+  }
+
+  .google-sigin-text {
+    font-size: 12px; /* Adjust Google sign-up text size */
+  }
+}
+
+.signin-section {
+  width: 30%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #ffffff;
+  position: relative;
+  float: left;
+  box-sizing: border-box;
+}
+
+/* Large screens (>=1024px) */
+@media (max-width: 1200px) {
+  .image-section {
+    width: 60%;
+  }
+
+  .signin-section {
+    width: 40%;
+  }
+}
+
+/* Group styling */
+.group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  margin-left: -3%;
+}
+
+/* Back arrow styling */
+.back-arrow {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.back-arrow:hover {
+  transform: scale(1.1);
+}
+
+/* Sign-up and Sign-in text styling */
+.sign-intext,
+.sign-uptext {
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 27px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.text-black {
+  color: black;
+}
+
+.text-gray-400 {
+  color: #a7a6a6;
+}
+
+/* Level bar styles */
+.level-bar-container {
+  width: 80%; /* 80% relative to the sign-up container */
+  height: 5px;
+  background-color: rgb(235, 230, 230);
+  margin-top: -70px;
+  box-sizing: border-box;
+}
+
+.level-bar-filled {
+  width: 19%; /* Percentage of the level bar filled */
+  height: 100%;
+  background-color: rgb(30, 187, 30);
+}
+
+/* Google Sign Up styles */
+.google-signin-container {
+  width: 80%; /* Match the width of the level bar */
+  height: 50px; /* Adjust height as needed */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff; /* White background */
+  border: 1px solid rgb(209, 209, 209); /* Light gray border */
+  margin-top: -42px; /* Space below the level bar */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  position: relative;
+  border-radius: 5px; /* Rounded corners for better aesthetics */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
+}
+
+.google-logo {
+  width: 26px; /* Adjust size of the logo */
+  height: 26px;
+  position: absolute;
+  left: 10px; /* Position logo at the left start */
+}
+
+.google-signin-text {
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 20px;
+  color: #757575; /* Gray color for text */
+  text-align: center;
+}
+
+/* Hover effect for the Google Sign Up container */
+.google-signin-container:hover {
+  border-color: pink; /* Highlight border with pink color on hover */
+  box-shadow: 0 4px 8px rgba(255, 105, 180, 0.3); /* Slightly larger shadow with pink tint */
+  background-color: #fdfdfd; /* Slightly lighter background */
+  cursor: pointer;
+}
+
+/* OR Divider styles */
+.or-divider {
+  display: flex;
+  position: relative;
+  width: 80%; /* Adjust width to 75% */
+  align-items: center;
+  margin-top: -45px;
+}
+
+.or-divider .line {
+  flex-grow: 1; /* Ensure lines stretch */
+  height: 1px;
+  background-color: #ccc; /* Light gray color for the line */
+}
+
+.or-divider .or-text {
+  margin: 0 10px; /* Space between text and lines */
+  font-size: 14px;
+  color: #999; /* Gray color for text */
+}
+
+.email-error {
+  position: absolute;
+  top: 30px; /* Position it at the bottom of the input */
+  left: 0;
+  color: red;
+  font-size: 0.8em; /* Adjust font size as needed */
+  z-index: 10;
+  padding: 5px;
+  border-left: 1px solid rgb(153, 153, 153);
+  border-right: 1px solid rgb(153, 153, 153);
+  border-radius: 4px;
+  box-sizing: border-box; /* Ensure padding doesn't overflow */
+  left: 50%;
+  background-color: rgb(255, 255, 255); /* Background color */
+  letter-spacing: 0.6px; /* Keep the letter-spacing when focused or with text */
+}
+
+/* Remember Me Container */
+.remember-me-container {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Space between checkbox and label */
+  position: relative; /* Position relative to allow absolute positioning of the circle */
+  margin-top: -50px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.remember-me-container input[type="checkbox"] {
+  width: 18px; /* Width of checkbox */
+  height: 20px; /* Height of checkbox */
+  margin-right: 10px; /* Space between checkbox and label */
+  position: relative; /* Position relative to allow for the animation circle */
+  accent-color: #00ff00; /* Modern way to change the checkbox color in some browsers */
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Animation circle styling */
+.remember-me-container .animation-circle {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 7%;
+  width: 30px; /* Size of the animation circle */
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #ff0000; /* Circle color */
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0); /* Center and scale the circle */
+  pointer-events: none;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.8); /* Slight shadow for better visibility */
+  transition: opacity 1s ease, transform 1s ease; /* Smooth animation for fade and scale */
+}
+
+/* Fade out effect for when the checkbox is unchecked */
+.remember-me-container .animation-circle.hide {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+  transition: opacity 1s ease, transform 1s ease; /* Smooth fade-out */
+}
+
+/* Apply bold font-weight to the "Remember me" text */
+.remember-me-container label {
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+}
+
+.animation-circle.fade {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+  transition: opacity 1s, transform 1s; /* Smooth fade out */
+}
+
+/* Show animation for the remember me circle */
+.animation-circle.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity 1s, transform 1s; /* Smooth show animation */
+}
+
+@keyframes circleAnimation {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+
+.forgot-password-container {
+  width: 100%; /* Ensure it takes full width of the container */
+  position: relative;
+  left: 0;
+  margin-top: -50px;
+}
+
+.forgot-password-container a {
+  color: rgb(30, 187, 30); /* Text color */
+  font-size: 0.9rem; /* Font size for the link */
+  text-decoration: none; /* Remove underline from link */
+}
+
+.forgot-password-container a:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
+.sign-in-button-container {
+  position: relative;
+  display: flex;
+  justify-content: flex-end; /* Align to the right */
+  width: 80%; /* Match the width of other inputs */
+  height: 40px;
+  margin-top: -110px; /* Adjust spacing as necessary */
+}
+
+/* Style for the Sign Up button */
+/* Style for the Sign Up button */
+.sign-in-button {
+  background-color: rgb(30, 187, 30); /* Green background */
+  color: white; /* White text */
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
+  /* Center text both vertically and horizontally */
+  display: flex;
+  align-items: center; /* Center text vertically */
+  justify-content: center; /* Center text horizontally */
+}
+
+.sign-in-button:hover {
+  background-color: rgb(0, 255, 0); /* Lighter green on hover */
+  box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3); /* Subtle shadow on hover */
+  color: black;
+}
+
+@media (max-width: 880px) {
+  .login-container {
+    flex-direction: column; /* Stack elements vertically */
+    width: 100%; /* Ensure the container spans the full width */
+  }
+
+  .image-section {
+    display: none !important;
+  }
+
+  .signin-section {
+    width: 100%; /* Full width of the page */
+    height: auto; /* Adjust height based on content */
+    padding: 20px; /* Add padding for better spacing */
+    box-sizing: border-box; /* Include padding in width/height */
+    position: relative;
+  }
+
+  .group {
+    position: relative; /* Remove absolute positioning */
+    left: 0; /* Ensure no left margin or offset */
+    width: 100%; /* Ensure it takes full width */
+    margin-left: 0; /* Reset margin */
+  }
+
+  @keyframes changeBackground {
+    0% {
+      background-image: url('Modules/background2.jpg');
+    }
+    25% {
+      background-image: url('Modules/background3.jpg');
+    }
+    50% {
+      background-image: url('Modules/background4.png');
+    }
+    75% {
+      background-image: url('Modules/background5.jpg');
+    }
+    100% {
+      background-image: url('Modules/background2.jpg');
+    }
+  }
+
+  .signin-section {
+    width: 100%;
+    height: 100vh; /* Adjust to your preferred height */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    animation: changeBackground 16s infinite; /* Loop every 16 seconds */
+  }
+  
+}
+@media (max-width: 350px) {
+  .group {
+    transform: scale(0.9); /* Scale down the entire group to 90% of its size */
+  }
+  .google-signin-text {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 16px;
+    color: #757575; /* Gray color for text */
+    text-align: center;
+  }
+  .google-logo {
+    width: 23px; /* Adjust size of the logo */
+    height: 23px;
+    position: absolute;
+    left: 10px; /* Position logo at the left start */
+  }  
+}
+
+.eye-icon {
+  top: 50%;
+  right: 0;
+  transform: translateY(-51%);
+  cursor: pointer;
+  width: 35px; /* Adjust box size */
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc; /* Border for the box */
+  background-color: #f9f9f9; /* Background color for the box */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for the box */
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+@media (min-width: 1001px) {
+  .eye-icon {
+    top: 50%;
+    right: 0;
+    transform: translateY(-51%);
+    cursor: pointer;
+    width: 35px; /* Adjust box size */
+    height: 46px;
+  }
+}

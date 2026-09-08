@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap');
+
+.background-below-globe {
+    min-height: 800px; /* Set a minimum height for responsiveness */
+    width: 100%; /* Full width of the container */
+    height: auto; /* Allow height to adjust based on content */
+    background-image: url('../../Modules/background/bg.jpg'); /* Specify the background image */
+    background-size: cover; /* Ensure the image covers the entire div */
+    background-position: center; /* Center the background image */
+    background-repeat: no-repeat; /* Prevent repeating of the background image */
+    margin-top: 20px; /* Add some spacing from the globe */
+    z-index: 0; /* Ensure it's behind other content if needed */  
+    position: relative; /* Position relative for glass-box placement */
+    display: flex; /* Use flexbox for centering if needed */
+    align-items: center; /* Center vertically if needed */
+    justify-content: center; /* Center horizontally if needed */
+}
+
+.glass-box {
+    width: 50%; /* 30% width of the background-below-globe */
+    height: 100%; /* Full height of the parent container */
+    position: absolute; /* Position absolute to place it on the left */
+    top: 0; /* Align to the top */
+    left: 0; /* Align to the left side */
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Border to enhance the glass effect */
+    padding: 20px; /* Padding inside the box */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow to make it stand out */
+    color: #000; /* Set text color */
+    display: flex; /* Flexbox for content alignment */
+    flex-direction: column; /* Align children in a column */
+    align-items: flex-start; /* Align items to the left */
+    justify-content: flex-start; /* Align items to the top */
+}
+
+.glass-box-text {
+    font-family: 'Lexend', sans-serif; /* Apply your font family */
+    font-weight: 600; /* Corrected to font-weight */
+    font-size: 4vw; /* Set responsive font size */
+    text-align: left; /* Align text to the left */
+    margin: 0; /* Remove default margins */
+    padding: 10px; /* Add some padding if needed */
+    display: flex; /* Use flexbox for vertical centering */
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center; /* Center vertically */
+    height: 100%; /* Ensure it takes full height of the glass box */
+}
+
+.grow-text {
+    font-family: 'Lexend', sans-serif; /* Match font family */
+    font-weight: 700; /* Bold font for strong presence */
+    text-transform: uppercase; /* Keep text uppercase */
+    font-size: 180px; /* Adjust font size */
+    background-size: cover; /* Cover the entire text */
+    background-position: center; /* Center the background */
+    -webkit-background-clip: text; /* Clip background to text */
+    -webkit-text-fill-color: transparent; /* Fill text with the clipped background */
+    position: absolute; /* Use absolute positioning */
+    left: 38%; /* Center it horizontally */
+    transform: translateX(-50%); /* Adjust to center it based on its own width */
+    top: 26%;
+    transform: translateY(-50%);
+}
+
+.any-text {
+    font-family: 'Lexend', sans-serif; /* Match font family */
+    font-weight: 700; /* Bold font for strong presence */
+    text-transform: uppercase; /* Keep text uppercase */
+    font-size: 180px; /* Adjust font size */
+    background-size: cover; /* Cover the entire text */
+    background-position: center; /* Center the background */
+    -webkit-background-clip: text; /* Clip background to text */
+    -webkit-text-fill-color: transparent; /* Fill text with the clipped background */
+    position: absolute; /* Use absolute positioning */
+    left: 49%; /* Center it horizontally */
+    transform: translateX(-50%); /* Adjust to center it based on its own width */
+    top: 44%;
+    transform: translateY(-50%);
+}
+
+.where-text {
+    font-family: 'Lexend', sans-serif; /* Match font family */
+    font-weight: 700; /* Bold font for strong presence */
+    text-transform: uppercase; /* Keep text uppercase */
+    font-size: 180px; /* Adjust font size */
+    background-size: cover; /* Cover the entire text */
+    background-position: center; /* Center the background */
+    -webkit-background-clip: text; /* Clip background to text */
+    -webkit-text-fill-color: transparent; /* Fill text with the clipped background */
+    position: absolute; /* Use absolute positioning */
+    left: 35%; /* Center it horizontally */
+    transform: translateX(-50%); /* Adjust to center it based on its own width */
+    top: 62%;
+    transform: translateY(-50%);
+}
+.slider-controls {
+    position: absolute; /* Make the controls absolute within the parent */
+    left: 50%; /* Center it horizontally */
+    transform: translate(-50%, 0); /* Adjust to center it based on its own width */
+    z-index: 1000; /* Ensure they are above other content */
+    top: 92%; /* Position near the bottom */
+}
+
+.arrow-btn {
+    background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent background */
+    border: none; /* Remove default button border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 15px; /* Padding for the button */
+    margin: 0 20px; /* Space between buttons */
+    cursor: pointer; /* Change cursor to pointer */
+    transition: background-color 0.3s; /* Smooth background color change */
+}
+
+.arrow-btn:hover {
+    background-color: rgba(255, 255, 255, 1); /* Change background on hover */
+}

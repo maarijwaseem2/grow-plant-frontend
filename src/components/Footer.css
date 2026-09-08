@@ -1,0 +1,9 @@
+
+@media (max-width: 380px) {
+    
+    .foot-er {
+        transform: scale(0.8); /* Scale down the entire group to 90% of its size */
+        margin-left: -20px !important;
+    }
+
+}

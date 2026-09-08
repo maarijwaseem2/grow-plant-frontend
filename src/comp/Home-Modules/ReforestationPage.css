@@ -1,0 +1,54 @@
+/* Centered icon images */
+.feature-icon img {
+    width: 80px;
+    height: 80px;
+}
+
+/* Add some padding and spacing */
+.feature-icon {
+    margin-bottom: 15px;
+}
+
+.custom-margin {
+    margin-top: 30px;
+}
+
+/* Align text to the left inside the column */
+.text-left-align {
+    text-align: left;
+}
+
+/* Center content and align columns in the middle */
+.center-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Ensure rows don't shift or move */
+.row {
+    margin-bottom: 0 !important;
+}
+
+/* Media query to stack icons and text vertically for smaller screens */
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+    }
+
+    /* Adjust text alignment for smaller screens */
+    .text-left-align {
+        text-align: center;
+    }
+
+    /* Adjust icon sizes for smaller screens */
+    .feature-icon img {
+        width: 60px;
+        height: 60px;
+    }
+
+    /* Adjust title size for smaller screens */
+    .custom-title {
+        font-size: 2rem;
+    }
+}
