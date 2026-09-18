@@ -1,534 +1,248 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../config";
-import backgroundImage from "../Modules/background/home-services-background.jpg"; // Update with the actual image path
-import "./HomeService.css";
-import "./Service.css";
-
-import videoFile from "../Modules/Videos/planting-tree.mp4";
-import axios from "axios";
-import PaymentForm from "./PaymentForm";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-import { decodeJwt } from "jose";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { decodeJwt } from "jose";
 import { toast } from "react-toastify";
-const stripePromise = loadStripe(
-  "pk_test_51OJXz3I01IywrPiuBqUt4xXDzitUHLkLjTbFNfLdUP2JHOnl3rUmj0DmDPtklzZBItOklPKI0jx5lO77f1Cb4eEa00tXSGBm82"
-);
-const HomeService = ({ products }) => {
-  const [location, setLocation] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState({});
-  const [total, setTotal] = useState(0);
-  const [isVideoVisible, setIsVideoVisible] = useState(false);
-  const [plants, setPlants] = useState([]);
-  const [address, setAddress] = useState("");
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [isDataLoaded, setIsDataLoaded] = useState(true);
+import "react-toastify/dist/ReactToastify.css";
+import { ThemeProvider } from "@mui/material/styles";
+import {
+  Box, Container, Grid, Typography, Button, TextField, Card, CardContent, CardMedia,
+  IconButton, Stack, Divider, Chip, Avatar,
+} from "@mui/material";
+import { Leaf, MapPin, Home, Minus, Plus, ShoppingBag, Navigation } from "lucide-react";
+import theme from "../theme";
+
+const GARDENER_FEE = 200;
+
+const HomeService = () => {
   const navigate = useNavigate();
-  const [userInfo, setUserInfo] = useState({
-    id: "",
-    name: "",
-    email: "",
-  });
-  const baseUrl = `${API_BASE_URL}/uploads/`;
-  useEffect(() => {
-    const fetchPlants = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/plants`);
-        setPlants(response.data.data);
-        setIsDataLoaded(true); // Mark as loaded
-      } catch (error) {
-        console.error("Failed to fetch plants:", error);
-      }
-    };
+  const [plants, setPlants] = useState([]);
+  const [selected, setSelected] = useState({}); // id -> { ...plant, qty }
+  const [location, setLocation] = useState("");
+  const [address, setAddress] = useState("");
+  const [userId, setUserId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [detecting, setDetecting] = useState(false);
+  const [gardeners, setGardeners] = useState([]);
+  const uploads = `${API_BASE_URL}/uploads/`;
 
-    fetchPlants();
+  useEffect(() => {
+    (async () => {
+      try { const res = await axios.get(`${API_BASE_URL}/plants`); setPlants(res.data.data || []); }
+      catch { toast.error("Failed to load services."); }
+    })();
+    (async () => {
+      try { const g = await axios.get(`${API_BASE_URL}/user/gardeners`); setGardeners(Array.isArray(g.data) ? g.data : (g.data?.data || [])); }
+      catch { /* ignore */ }
+    })();
+    const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("userToken");
+    if (token) (async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/user`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.data?.data) { const uid = decodeJwt(token).sub; const me = res.data.data.find((u) => u.id === uid); if (me) setUserId(me.id); }
+      } catch { /* guest */ }
+    })();
   }, []);
-  const handleBackgroundClick = () => {
-    setIsVideoVisible((prevState) => !prevState); // Toggle between image and video
-  };
 
-  const calculateGardenerFee = (selectedProducts) => {
-    const totalItems = Object.values(selectedProducts).reduce(
-      (sum, product) => sum + product.selectedQuantity,
-      0
-    );
-
-    if (totalItems === 0) return 0;
-
-    let fee = 0;
-    for (let i = 1; i <= totalItems; i++) {
-      fee += i % 2 === 1 ? 100 : 50;
-    }
-
-    return fee;
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!location || !address || Object.keys(selectedProducts).length === 0) {
-      toast.error(
-        "Please select a location, enter your address, and select at least one product!"
-      );
-      return;
-    }
-
-    console.log("Location:", location);
-    console.log("Address:", address);
-    console.log("Selected Products:", selectedProducts);
-    console.log("Total:", total);
-  };
-
-  const handleProductSelect = (product) => {
-    if (product.quantity === 0) return;
-
-    setSelectedProducts((prev) => {
-      if (prev[product.id]) {
-        const { [product.id]: _, ...rest } = prev;
-        return rest;
-      } else {
-        return { ...prev, [product.id]: { ...product, selectedQuantity: 1 } };
-      }
-    });
-  };
-
-  const handleQuantityChange = (e, productId, maxQuantity) => {
-    e.stopPropagation();
-    const value = parseInt(e.target.value, 10);
-    const quantity = Math.min(Math.max(1, value), maxQuantity);
-
-    setSelectedProducts((prev) => ({
-      ...prev,
-      [productId]: { ...prev[productId], selectedQuantity: quantity },
-    }));
-  };
-
-  React.useEffect(() => {
-    const plantTotal = Object.values(selectedProducts).reduce(
-      (sum, product) => sum + product.price * product.selectedQuantity,
-      0
-    );
-
-    const gardenerFee = calculateGardenerFee(selectedProducts);
-
-    const newTotal = plantTotal + gardenerFee;
-
-    setTotal(newTotal);
-  }, [selectedProducts]);
-
-  const handleOrderPlacement = async () => {
-    // Validate required fields
-    if (!location || !address) {
-      toast.error("Please select a location and enter your complete address.");
-      return;
-    }
-
-    // Map selected products to include their IDs and quantities
-    const products = Object.values(selectedProducts).map((product) => ({
-      plantId: product.id,
-      quantity: product.selectedQuantity,
-      name: product.name,
-    }));
-
-    // Prepare order data payload
-    const orderData = {
-      userId: userInfo.id, // User ID
-      plants: products, // Array of plantId and quantity
-      total, // Total amount
-      location, // Selected location
-      address, // Complete address
-    };
-
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/home-service`,
-        orderData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Auth token
-          },
-        }
-      );
-
-      if (response.status === 201) {
-        console.log("Order saved successfully:", response.data);
-        setShowPaymentForm(true); // Proceed to payment after saving
-      } else {
-        console.error("Failed to save order:", response.data);
-      }
-    } catch (err) {
-      console.error("Error saving order:", err);
-      // Optionally show an error message to the user
-      toast.error("Failed to place order. Please try again.");
-    }
-  };
-
-  useEffect(() => {
-    const storedTokens = {
-      authToken: localStorage.getItem("authToken"),
-      token: localStorage.getItem("token"),
-      userToken: localStorage.getItem("userToken"),
-    };
-
-    const authToken =
-      storedTokens.authToken || storedTokens.token || storedTokens.userToken;
-
-    if (!authToken) {
-      console.error("No authentication token found in any storage key");
-      navigate("/login");
-      return;
-    }
-
-    const fetchUserDetails = async () => {
+  const toggle = (plant) => setSelected((s) => {
+    if (s[plant.id]) { const { [plant.id]: _, ...rest } = s; return rest; }
+    return { ...s, [plant.id]: { ...plant, qty: 1 } };
+  });
+  const changeQty = (id, delta) => setSelected((s) => {
+    const item = s[id]; if (!item) return s;
+    const q = Math.max(1, Math.min(item.quantity, item.qty + delta));
+    return { ...s, [id]: { ...item, qty: q } };
+  });
+  // type an exact quantity (capped at stock, min 1)
+  const setQtyAbs = (id, val) => setSelected((s) => {
+    const item = s[id]; if (!item) return s;
+    let q = parseInt(val, 10);
+    if (isNaN(q)) q = 1;
+    q = Math.max(1, Math.min(item.quantity, q));
+    return { ...s, [id]: { ...item, qty: q } };
+  });
+  // auto-detect the customer's location (free OpenStreetMap reverse geocode)
+  const detectLocation = () => {
+    if (!navigator.geolocation) { toast.error("Location isn't supported on this device."); return; }
+    setDetecting(true);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/user`, {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        });
+        const { latitude, longitude } = pos.coords;
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const d = await r.json();
+        const a = d.address || {};
+        setLocation(a.suburb || a.neighbourhood || a.town || a.city || a.county || "My location");
+        setAddress(d.display_name || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+        toast.success("Location detected.");
+      } catch { toast.error("Couldn't detect your location."); }
+      finally { setDetecting(false); }
+    }, () => { toast.error("Location permission denied."); setDetecting(false); });
+  };
 
-        console.log("Full User Details Response:", response.data);
+  const items = Object.values(selected);
+  const subtotal = items.reduce((t, i) => t + i.price * i.qty, 0);
+  const fee = items.length > 0 ? GARDENER_FEE : 0;
+  const total = subtotal + fee;
 
-        if (response.data && response.data.data) {
-          // Decode the authToken to get the user ID
-          const decodedToken = decodeJwt(authToken);
-          console.log("Decoded Token:", decodedToken);
-
-          // `sub` represents the user ID in the token
-          const userId = decodedToken.sub;
-
-          // Find the user matching the decoded user ID
-          const userDetails = response.data.data.find(
-            (user) => user.id === userId
-          );
-
-          if (userDetails) {
-            setUserInfo(userDetails);
-          } else {
-            toast.error("No user details found.");
-            setError("No user details found.");
-          }
-        }
-      } catch (err) {
-        if (err.response?.status === 401) {
-          navigate("/login");
-        } else {
-          setError("Failed to fetch user details");
-        }
+  const submit = async () => {
+    if (!location || !address) { toast.error("Please enter your area and address."); return; }
+    if (items.length === 0) { toast.error("Please select at least one service."); return; }
+    if (!userId) { toast.error("Please log in to request a service."); navigate("/login"); return; }
+    setSubmitting(true);
+    try {
+      const res = await axios.post(`${API_BASE_URL}/home-service`, {
+        userId,
+        plants: items.map((i) => ({ plantId: i.id, quantity: i.qty, name: i.name })),
+        total,
+        location,
+        address,
+      }, { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } });
+      if (res.status === 201) {
+        toast.success("Home service requested successfully! 🌿");
+        setSelected({}); setLocation(""); setAddress("");
+        navigate("/my-services");
       }
-    };
-
-    fetchUserDetails();
-  }, [navigate]);
-
-  const handleProceedToPayment = () => {
-    if (!location) {
-      toast.error("Please select a location.");
-      return;
-    }
-
-    if (!address) {
-      toast.error("Please enter your complete address.");
-      return;
-    }
-
-    if (Object.keys(selectedProducts).length === 0) {
-      toast.error("Please select at least one product.");
-      return;
-    }
-
-    setShowPaymentForm(true);
+    } catch { toast.error("Failed to request service. Please try again."); }
+    finally { setSubmitting(false); }
   };
 
   return (
-    <>
-      {/* Main Home Services Section */}
-      <div className="homeservices-container relative w-full">
-        {/* Conditionally render background image or video */}
-        {!isVideoVisible ? (
-          <div
-            className="background-image w-full"
-            style={{ backgroundImage: `url(${backgroundImage})` }}
-            onClick={handleBackgroundClick} // Toggle on image click
-          >
-            {/* Text overlay with gently curved text */}
-            <div className="text-overlay">
-              <svg
-                viewBox="0 0 1000 200"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-full h-auto max-w-5xl"
-              >
-                <path
-                  id="curvePath"
-                  d="M100,140 C300,100 700,100 900,140"
-                  fill="transparent"
-                />
-                <text
-                  fontSize="80"
-                  fill="transparent"
-                  stroke="white"
-                  strokeWidth="2"
-                  letterSpacing="0.1em"
-                  dominantBaseline="middle"
-                  style={{ fontFamily: "'Lora', serif" }}
-                >
-                  <textPath
-                    href="#curvePath"
-                    textAnchor="middle"
-                    startOffset="45%"
-                  >
-                    HOME SERVICES
-                  </textPath>
-                </text>
-              </svg>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="absolute top-0 left-0 w-full"
-            onClick={handleBackgroundClick} // Toggle on video click
-          >
-            <video
-              src={videoFile}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="video-background object-cover w-full"
-            />
-          </div>
-        )}
-      </div>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ pt: "64px", bgcolor: "#f4f7f4", minHeight: "100vh" }}>
+        <Box sx={{ background: "linear-gradient(160deg, #1b5e20, #2e7d32)", color: "#fff", py: { xs: 5, md: 7 } }}>
+          <Container maxWidth="md" sx={{ textAlign: "center" }}>
+            <Stack direction="row" spacing={1} justifyContent="center" alignItems="center" sx={{ mb: 2, opacity: 0.9 }}>
+              <Leaf size={20} /><Typography variant="body2" sx={{ fontWeight: 600, letterSpacing: 1 }}>HOME SERVICES</Typography>
+            </Stack>
+            <Typography variant="h3" sx={{ fontWeight: 800, fontSize: { xs: "1.8rem", md: "2.4rem" } }}>Request a home service</Typography>
+            <Typography variant="body1" sx={{ opacity: 0.9, mt: 1 }}>A gardener will plant and set things up right at your doorstep.</Typography>
+          </Container>
+        </Box>
 
-      <div className="req-homeser max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-32">
-        {/* Header Section */}
-        <div className="bg-gradient-to-r from-green-500 to-green-600 px-8 py-6">
-          <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
-            Request Home Service
-          </h2>
-          <p className="text-green-50 text-sm">
-            Select services and specify your location
-          </p>
-        </div>
+        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={8}>
+              <Card variant="outlined" sx={{ borderRadius: 3, mb: 3 }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>Your location</Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={5}>
+                      <TextField fullWidth label="Area / locality" value={location} onChange={(e) => setLocation(e.target.value)}
+                        InputProps={{ startAdornment: <MapPin size={18} style={{ marginRight: 8 }} />,
+                          endAdornment: <Button size="small" onClick={detectLocation} disabled={detecting} startIcon={<Navigation size={14} />} sx={{ whiteSpace: "nowrap", minWidth: 0 }}>{detecting ? "…" : "Detect"}</Button> }} />
+                    </Grid>
+                    <Grid item xs={12} sm={7}>
+                      <TextField fullWidth label="Complete address" value={address} onChange={(e) => setAddress(e.target.value)}
+                        InputProps={{ startAdornment: <Home size={18} style={{ marginRight: 8 }} /> }} />
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
 
-        {/* Rest of the form elements */}
-        <form onSubmit={handleSubmit} className="p-8">
-          {/* Location Dropdown */}
-          <div className="mb-6">
-            <label
-              htmlFor="location"
-              className="block text-gray-700 text-sm font-semibold mb-2"
-            >
-              Select Your Location
-            </label>
-            <select
-              id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-            >
-              <option value="" disabled>
-                Select your area
-              </option>
-              <optgroup label="F.B Area">
-                <option value="F.B Area Block 4">F.B Area Block 4</option>
-                <option value="F.B Area Block 3">F.B Area Block 3</option>
-                <option value="F.B Area Block 1">F.B Area Block 1</option>
-                <option value="F.B Area Block 20">F.B Area Block 20</option>
-                <option value="F.B Area Block 21">F.B Area Block 21</option>
-                <option value="F.B Area Block 15">F.B Area Block 15</option>
-              </optgroup>
-              <optgroup label="Gulshan e Iqbal">
-                <option value="Gulshan Block 3">Gulshan Block 3</option>
-                <option value="Gulshan Block 4">Gulshan Block 4</option>
-                <option value="Gulshan Block 5">Gulshan Block 5</option>
-                <option value="Gulshan Block 6">Gulshan Block 6</option>
-              </optgroup>
-              <optgroup label="Other Areas">
-                <option value="Gulistan e Johar">Gulistan e Johar</option>
-                <option value="Malir">Malir</option>
-                <option value="Korangi">Korangi</option>
-                <option value="Liyari">Liyari</option>
-              </optgroup>
-            </select>
-          </div>
-          {/* Address Input */}
-          <div className="mb-6">
-            <label
-              htmlFor="address"
-              className="block text-gray-700 text-sm font-semibold mb-2"
-            >
-              Enter Your Complete Address
-            </label>
-            <input
-              type="text"
-              id="address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter your complete address"
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-            />
-          </div>
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>Select services</Typography>
+              <Grid container spacing={2}>
+                {plants.map((p) => {
+                  const isSel = !!selected[p.id];
+                  const out = p.quantity <= 0;
+                  return (
+                    <Grid item xs={12} sm={6} key={p.id}>
+                      <Card variant="outlined" onClick={() => !out && toggle(p)}
+                        sx={{ borderRadius: 3, cursor: out ? "default" : "pointer", borderColor: isSel ? "primary.main" : undefined, borderWidth: isSel ? 2 : 1 }}>
+                        <Stack direction="row" spacing={2} sx={{ p: 2 }} alignItems="center">
+                          <Box sx={{ width: 72, height: 72, bgcolor: "#f4f7f4", borderRadius: 2, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <Box component="img" src={`${uploads}${p.image}`} alt={p.name} sx={{ maxWidth: "80%", maxHeight: "80%", objectFit: "contain" }} />
+                          </Box>
+                          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 700 }} noWrap>{p.name}</Typography>
+                            <Typography variant="body2" sx={{ color: "primary.main", fontWeight: 700 }}>Rs {Number(p.price).toLocaleString()}</Typography>
+                            {out && <Chip label="Unavailable" size="small" color="error" sx={{ mt: 0.5 }} />}
+                          </Box>
+                          {isSel && (
+                            <Stack direction="row" spacing={0.5} alignItems="center" onClick={(e) => e.stopPropagation()}>
+                              <IconButton size="small" onClick={() => changeQty(p.id, -1)}><Minus size={14} /></IconButton>
+                              <input type="number" min={1} max={selected[p.id].quantity} value={selected[p.id].qty}
+                                onChange={(e) => setQtyAbs(p.id, e.target.value)} onClick={(e) => e.stopPropagation()}
+                                style={{ width: 50, textAlign: "center", fontWeight: 700, border: "1px solid #ddd", borderRadius: 6, padding: "4px 2px" }} />
+                              <IconButton size="small" onClick={() => changeQty(p.id, 1)}><Plus size={14} /></IconButton>
+                            </Stack>
+                          )}
+                        </Stack>
+                      </Card>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </Grid>
 
-          {/* Product Cards */}
-          <div className="mb-8">
-            <h3 className="text-gray-700 text-lg font-semibold mb-4">
-              Available Services
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {plants.map((product) => {
-                const isOutOfStock = product.quantity === 0;
-                const isSelected = selectedProducts[product.id];
+            <Grid item xs={12} md={4}>
+              <Card variant="outlined" sx={{ borderRadius: 3, position: { md: "sticky" }, top: 88 }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>Summary</Typography>
+                  {items.length === 0 ? (
+                    <Stack alignItems="center" sx={{ py: 3 }} spacing={1}>
+                      <Avatar sx={{ bgcolor: "#eaf3ea", color: "primary.main" }}><ShoppingBag size={22} /></Avatar>
+                      <Typography variant="body2" color="text.secondary">No services selected yet.</Typography>
+                    </Stack>
+                  ) : (
+                    <>
+                      <Stack spacing={1.2}>
+                        <Row label="Services subtotal" value={`Rs ${subtotal.toLocaleString()}`} />
+                        <Row label="Gardener fee" value={`Rs ${fee.toLocaleString()}`} />
+                        <Divider sx={{ my: 1 }} />
+                        <Row label={<b>Total</b>} value={<b>{`Rs ${total.toLocaleString()}`}</b>} />
+                      </Stack>
+                      <Button fullWidth variant="contained" size="large" onClick={submit} disabled={submitting} sx={{ mt: 3, py: 1.3 }}>
+                        {submitting ? "Requesting…" : "Request service"}
+                      </Button>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5, textAlign: "center" }}>
+                        Payment coming soon — request is recorded for now.
+                      </Typography>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
 
-                return (
-                  <div
-                    key={product.id}
-                    className={`rounded-xl transition-all duration-300 overflow-hidden
-                      ${
-                        isOutOfStock
-                          ? "bg-gray-50 cursor-not-allowed"
-                          : "cursor-pointer hover:shadow-lg"
-                      }
-                      ${
-                        isSelected
-                          ? "ring-2 ring-green-500 shadow-lg"
-                          : "border border-gray-200"
-                      }`}
-                    onClick={() => handleProductSelect(product)}
-                  >
-                    <div className="relative">
-                      <img
-                        src={`${baseUrl}${product.image}`}
-                        alt={product.name}
-                        className={`h-48 w-full object-cover ${
-                          isOutOfStock ? "opacity-50" : ""
-                        }`}
-                      />
-                      {isOutOfStock && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-                          <span className="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                            Out of Stock
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="text-lg font-semibold text-gray-800">
-                          {product.name}
-                        </h4>
-                        <span className="text-lg font-bold text-green-600">
-                          Rs: {product.price}
-                        </span>
-                      </div>
-
-                      <p
-                        className={`text-sm mb-3 ${
-                          isOutOfStock ? "text-red-500" : "text-gray-600"
-                        }`}
-                      >
-                        {isOutOfStock
-                          ? "Currently Unavailable"
-                          : `${product.quantity} slots available`}
-                      </p>
-
-                      {isSelected && !isOutOfStock && (
-                        <div
-                          className="mt-3 p-3 bg-gray-50 rounded-lg"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="flex-1">
-                              <label
-                                htmlFor={`quantity-${product.id}`}
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                              >
-                                Quantity
-                              </label>
-                              <input
-                                type="number"
-                                id={`quantity-${product.id}`}
-                                min="1"
-                                max={product.quantity}
-                                value={
-                                  selectedProducts[product.id].selectedQuantity
-                                }
-                                onChange={(e) =>
-                                  handleQuantityChange(
-                                    e,
-                                    product.id,
-                                    product.quantity
-                                  )
-                                }
-                                className="w-full p-2 border border-gray-200 rounded-md text-center focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                              />
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              max: {product.quantity}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Total Cost Section */}
-          <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
-            <h4 className="text-gray-700 text-lg font-semibold mb-4">
-              Total Summary
-            </h4>
-            <div className="flex justify-between items-center text-gray-800 mb-2">
-              <span>Plant Service Total</span>
-              <span className="font-bold">
-                Rs:{" "}
-                {(total - calculateGardenerFee(selectedProducts)).toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center text-gray-500 mb-2">
-              <span>Gardener Fees</span>
-              <span className="font-bold">
-                Rs: {calculateGardenerFee(selectedProducts).toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center text-gray-800 text-lg font-bold">
-              <span>Grand Total</span>
-              <span>Rs: {total.toFixed(2)}</span>
-            </div>
-          </div>
-
-          {/* Conditional "Proceed to Payment" Button */}
-          {!showPaymentForm ? (
-            <button
-              onClick={handleProceedToPayment}
-              className="mt-4 w-full bg-green-600 text-white py-2 rounded-md"
-            >
-              Proceed to Payment
-            </button>
-          ) : null}
-        </form>
-      </div>
-
-      {/* Payment Form (if showPaymentForm is true) */}
-      {showPaymentForm && (
-        <Elements stripe={stripePromise}>
-          <PaymentForm
-            totalPrice={total}
-            onClose={() => setShowPaymentForm(false)}
-            onPaymentSuccess={() => {
-              setShowPaymentForm(false);
-              handleOrderPlacement();
-              navigate("/home-services"); // Navigate to a success page after payment
-            }}
-          />
-        </Elements>
-      )}
-    </>
+          {gardeners.length > 0 && (
+            <Box sx={{ mt: 6 }}>
+              <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>Meet our gardeners</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Verified, admin-approved gardeners who'll carry out your service. You'll coordinate safely through Go Green chat.
+              </Typography>
+              <Grid container spacing={2}>
+                {gardeners.map((g) => (
+                  <Grid item xs={12} sm={6} md={4} key={g.id}>
+                    <Card variant="outlined" sx={{ borderRadius: 3, height: "100%" }}>
+                      <CardContent>
+                        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
+                          <Avatar src={g.image || undefined} sx={{ width: 56, height: 56, bgcolor: "#2e7d32" }}>{(g.username || "G")[0]}</Avatar>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 700 }} noWrap>{g.username}</Typography>
+                            <Typography variant="caption" color="text.secondary">{g.city || "—"}</Typography>
+                          </Box>
+                        </Stack>
+                        {g.experience && <Typography variant="body2" sx={{ mb: 0.5 }}>Experience: {g.experience}</Typography>}
+                        {g.services && <Typography variant="body2">Services: {g.services}</Typography>}
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 };
+
+const Row = ({ label, value }) => (
+  <Stack direction="row" justifyContent="space-between">
+    <Typography variant="body2" color="text.secondary">{label}</Typography>
+    <Typography variant="body2" sx={{ fontWeight: 600 }}>{value}</Typography>
+  </Stack>
+);
 
 export default HomeService;

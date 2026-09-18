@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useContext } from "react";
 import { CartContext } from "../context/CartContext";
+import Seo from "./Seo";
 
 const ProductDetail = () => {
   const { handleAddToCart, cartQuantity } = useContext(CartContext);
@@ -109,6 +110,7 @@ const ProductDetail = () => {
     : null;
   return (
     <div className="container mt-5 px-4 md:px-8 lg:px-16">
+      <Seo title={product?.data?.name} description={product?.data?.description} image={imageSrc} path={`/product/${id}`} />
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <div className="flex justify-center items-center bg-gray-50 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl">
           <img

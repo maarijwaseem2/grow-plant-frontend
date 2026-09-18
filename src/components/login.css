@@ -187,7 +187,7 @@
 .level-bar-filled {
   width: 19%; /* Percentage of the level bar filled */
   height: 100%;
-  background-color: rgb(30, 187, 30);
+  background-color: #2e7d32;
 }
 
 /* Google Sign Up styles */
@@ -349,7 +349,7 @@
 }
 
 .forgot-password-container a {
-  color: rgb(30, 187, 30); /* Text color */
+  color: #2e7d32; /* Text color */
   font-size: 0.9rem; /* Font size for the link */
   text-decoration: none; /* Remove underline from link */
 }
@@ -370,7 +370,7 @@
 /* Style for the Sign Up button */
 /* Style for the Sign Up button */
 .sign-in-button {
-  background-color: rgb(30, 187, 30); /* Green background */
+  background-color: #2e7d32; /* Green background */
   color: white; /* White text */
   padding: 12px 24px;
   font-size: 16px;
@@ -385,7 +385,7 @@
 }
 
 .sign-in-button:hover {
-  background-color: rgb(0, 255, 0); /* Lighter green on hover */
+  background-color: #1b5e20; /* Lighter green on hover */
   box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3); /* Subtle shadow on hover */
   color: black;
 }

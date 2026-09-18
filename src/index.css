@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Prevent horizontal overflow (fixes RTL/Urdu "can't scroll / cut off") */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+/* Urdu right-to-left niceties */
+[dir="rtl"] body { text-align: right; }
+[dir="rtl"] .gg-nav, [dir="rtl"] .gg-actions { direction: rtl; }

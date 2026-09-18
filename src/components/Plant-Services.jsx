@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { API_BASE_URL } from "../config";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { debounce } from "lodash";
@@ -8,11 +8,42 @@ import "./Plant-Services.css";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+const suggestedIcon = L.divIcon({
+  className: "",
+  html: '<div style="background:#2e7d32;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 4px rgba(0,0,0,0.45)"></div>',
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+});
+
 const customIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/1673/1673188.png", // URL to a red marker icon
   iconSize: [40, 40],
   iconAnchor: [15, 30],
 });
+
+// Street (OSM) vs Satellite (Esri World Imagery — free, no key)
+const TILES = {
+  street: {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
+  satellite: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution: "Tiles &copy; Esri, Maxar, Earthstar Geographics",
+  },
+};
+
+// Static satellite thumbnail of a point — shows what the actual place looks like from above
+const satThumb = (lat, lng, d = 0.004) =>
+  `https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/export?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&bboxSR=4326&imageSR=4326&size=240,150&format=jpg&f=image`;
+
+// Small floating Map/Satellite switch shown over each map
+const ViewToggle = ({ view, setView }) => (
+  <div style={{ position: "absolute", top: 10, right: 10, zIndex: 1000, display: "flex", borderRadius: 6, overflow: "hidden", boxShadow: "0 1px 5px rgba(0,0,0,0.35)", border: "1px solid rgba(0,0,0,0.12)" }}>
+    <div onClick={() => setView("street")} style={{ padding: "4px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", background: view === "street" ? "#2e7d32" : "#fff", color: view === "street" ? "#fff" : "#333" }}>Map</div>
+    <div onClick={() => setView("satellite")} style={{ padding: "4px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", background: view === "satellite" ? "#2e7d32" : "#fff", color: view === "satellite" ? "#fff" : "#333" }}>Satellite</div>
+  </div>
+);
 
 const PlantService = ({ products }) => {
   const [location, setLocation] = useState([24.8607, 67.0011]);
@@ -32,6 +63,30 @@ const PlantService = ({ products }) => {
   const [isMobileView, setIsMobileView] = useState(false);
   const [plants, setPlants] = useState([]);
   const [isDataLoaded, setIsDataLoaded] = useState(true);
+
+  // Restore an in-progress selection so going back doesn't wipe location + plants
+  useEffect(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem("ps_draft") || "null");
+      if (d) {
+        if (Array.isArray(d.selectedProducts)) setSelectedProducts(d.selectedProducts);
+        if (Array.isArray(d.location)) setLocation(d.location);
+        if (d.locationName) setLocationName(d.locationName);
+        if (d.marker) setMarker(d.marker);
+        if (d.selectedSubscription) setSelectedSubscription(d.selectedSubscription);
+        if (typeof d.isLocationValid === "boolean") setIsLocationValid(d.isLocationValid);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  // Persist the selection on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem("ps_draft", JSON.stringify({
+        selectedProducts, location, locationName, marker, selectedSubscription, isLocationValid,
+      }));
+    } catch { /* ignore */ }
+  }, [selectedProducts, location, locationName, marker, selectedSubscription, isLocationValid]);
   useEffect(() => {
     const fetchPlants = async () => {
       try {
@@ -103,12 +158,92 @@ const PlantService = ({ products }) => {
       const res = await axios.post(`${API_BASE_URL}/services`, payload);
   
       toast.success("Service booked successfully!");
-      // Redirect ya state reset karo
+      // clear the saved draft + reset so it doesn't restore stale data next time
+      localStorage.removeItem("ps_draft");
+      setSelectedProducts([]); setMarker(null); setLocationName(""); setIsLocationValid(false);
+      navigate("/my-services");
     } catch (err) {
       toast.error("Error booking service");
       console.error(err);
     }
   };
+  const [suggestedSpots, setSuggestedSpots] = useState([]);
+  const [mapView, setMapView] = useState("street");
+  const [greenById, setGreenById] = useState({});
+  const [loadingSpots, setLoadingSpots] = useState(false);
+
+  // Ask the AI service for PUBLIC plantable spots near the current map center.
+  const suggestSpots = async () => {
+    setLoadingSpots(true);
+    try {
+      const [lat, lng] = location;
+      const res = await axios.get(`${API_BASE_URL}/ai/suggest-spots`, {
+        params: { lat, lng, radius: 5000, limit: 30 },
+      });
+      const feats = (res.data?.features || []).map((f) => ({
+        lat: f.geometry.coordinates[1],
+        lng: f.geometry.coordinates[0],
+        name: f.properties?.name,
+        category: f.properties?.category,
+        score: f.properties?.score,
+      }));
+      setSuggestedSpots(feats);
+      if (feats.length === 0) toast.error("No public spots found nearby. Try a different area.");
+      else toast.success(`Found ${feats.length} suggested public spots.`);
+    } catch (e) {
+      toast.error("Couldn't get suggestions. Make sure the AI service is running.");
+    } finally {
+      setLoadingSpots(false);
+    }
+  };
+
+  // Pick one of the suggested spots as the plantation location.
+  const applySuggestedSpot = (s) => {
+    setLocation([s.lat, s.lng]);
+    setMarker([s.lat, s.lng]);
+    setZoom(15);
+    setIsLocationValid(true);
+    setIsMapClicked(true);
+    getLocationName(s.lat, s.lng);
+    toast.success("Location set to the suggested spot.");
+  };
+
+  // AI suitability: satellite greenness estimate for a spot
+  const checkGreen = async (s) => {
+    const key = `${s.lat},${s.lng}`;
+    setGreenById((prev) => ({ ...prev, [key]: { note: "Checking…", greenness: null } }));
+    try {
+      const res = await axios.get(`${API_BASE_URL}/ai/spot-greenness`, { params: { lat: s.lat, lng: s.lng } });
+      setGreenById((prev) => ({ ...prev, [key]: res.data }));
+    } catch {
+      setGreenById((prev) => ({ ...prev, [key]: { note: "Couldn't check right now.", greenness: null } }));
+    }
+  };
+
+  const detectMyLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        if (isLocationInBounds(latitude, longitude)) {
+          setLocation([latitude, longitude]);
+          setMarker([latitude, longitude]);
+          setZoom(14);
+          setIsLocationValid(true);
+          setIsMapClicked(true);
+          getLocationName(latitude, longitude);
+          toast.success("Location detected.");
+        } else {
+          toast.error("You appear to be outside Pakistan. Please pick a spot on the map.");
+        }
+      },
+      () => toast.error("Location permission denied. Please pick a spot on the map.")
+    );
+  };
+
   const MapClickHandler = () => {
     useMapEvents({
       click: (e) => {
@@ -122,7 +257,7 @@ const PlantService = ({ products }) => {
           setIsMapClicked(true); // Show the blue background
         } else {
           toast.error(
-            "Location is outside Karachi Division. Please select a valid location."
+            "Location is outside Pakistan. Please select a valid location."
           );
           setIsLocationValid(false);
           setIsMapClicked(false); // Hide the blue background if the location is invalid
@@ -169,17 +304,18 @@ const PlantService = ({ products }) => {
     selectedProducts,
   ]);
 
-  const karachiBounds = [
-    [24.75, 66.8],
-    [25.4, 67.4],
+  // Bounding box covering all of Pakistan (SW corner, NE corner)
+  const pakistanBounds = [
+    [23.5, 60.8],
+    [37.1, 77.9],
   ];
 
   const isLocationInBounds = (lat, lng) => {
     return (
-      lat >= karachiBounds[0][0] &&
-      lat <= karachiBounds[1][0] &&
-      lng >= karachiBounds[0][1] &&
-      lng <= karachiBounds[1][1]
+      lat >= pakistanBounds[0][0] &&
+      lat <= pakistanBounds[1][0] &&
+      lng >= pakistanBounds[0][1] &&
+      lng <= pakistanBounds[1][1]
     );
   };
 
@@ -261,7 +397,7 @@ const PlantService = ({ products }) => {
       setIsLocationValid(true);
     } else {
       toast.error(
-        "Location is outside Karachi Division. Please select a valid location."
+        "Location is outside Pakistan. Please select a valid location."
       );
       setIsLocationValid(false);
     }
@@ -335,8 +471,10 @@ const PlantService = ({ products }) => {
 
   const handleQuantityChange = (productId, newQuantity) => {
     const product = plants.find((p) => p.id === productId);
-
-    newQuantity = Math.max(1, Math.min(newQuantity, product.quantity)); // Set a minimum of 1, and max of product's stock
+    const stock = product?.quantity ?? 1;
+    let q = parseInt(newQuantity, 10);
+    if (isNaN(q)) q = 1;
+    newQuantity = Math.max(1, Math.min(q, stock)); // min 1, max = live stock
 
     setSelectedProducts((prevSelectedProducts) =>
       prevSelectedProducts.map((product) =>
@@ -400,14 +538,14 @@ const PlantService = ({ products }) => {
               Plant Location
             </h2>
             <p className="text-black text-sm mb-4 mt-6">
-              Click on the map to set a marker within Karachi's boundaries or
+              Click on the map to set a marker within Pakistan or
               manually enter a location.
             </p>
             <input
               type="text"
               className={`w-full p-3 rounded-md ${
-                locationNotFound ? "border-red-500" : "border-black"
-              } border-solid bg-transparent text-black`}
+                locationNotFound ? "border-red-500" : "border-gray-300"
+              } border-solid bg-white text-gray-800`}
               value={locationName}
               onChange={(e) => {
                 const newLocationName = e.target.value;
@@ -422,7 +560,7 @@ const PlantService = ({ products }) => {
             />
             {loading && <p className="text-black mt-2">Loading...</p>}
             {suggestions.length > 0 && (
-              <ul className="suggestions-list bg-white border border-black mt-2 rounded-md max-h-60 overflow-y-auto">
+              <ul className="suggestions-list bg-white border border-gray-300 mt-2 rounded-md max-h-60 overflow-y-auto">
                 {suggestions.map((suggestion, index) => (
                   <li
                     key={index}
@@ -434,11 +572,26 @@ const PlantService = ({ products }) => {
                 ))}
               </ul>
             )}
+            <button
+              type="button"
+              onClick={detectMyLocation}
+              className="w-full mt-3 p-2.5 rounded-md border border-green-600 text-green-700 bg-white hover:bg-green-50 flex items-center justify-center gap-2 transition text-sm font-medium"
+            >
+              📍 Detect my location
+            </button>
+            <button
+              type="button"
+              onClick={suggestSpots}
+              disabled={loadingSpots}
+              className="w-full mt-2 p-2.5 rounded-md bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2 transition text-sm font-medium disabled:opacity-60"
+            >
+              {loadingSpots ? "Finding spots…" : "🌱 Suggest public spots (AI)"}
+            </button>
             <h3 className="text-black text-xl mt-6">Select Products</h3>
             <select
               onChange={handleProductChange}
               disabled={!isDataLoaded}
-              className="w-full p-3 mt-2 rounded-md border-black border-solid bg-transparent text-black"
+              className="w-full p-3 mt-2 rounded-lg border border-gray-300 bg-white text-gray-800 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
               value={defaultProduct}
             >
               <option value="" disabled>
@@ -477,19 +630,17 @@ const PlantService = ({ products }) => {
 
                     <input
                       type="number"
-                      className="quantity-input w-20 p-2 border border-black rounded-md text-black text-center"
+                      className="quantity-input w-20 p-2 border border-gray-300 rounded-md text-black text-center"
                       value={product.quantity}
                       onChange={
                         (e) =>
                           handleQuantityChange(
                             product.id,
-                            Math.max(1, parseInt(e.target.value))
-                          ) // Ensure minimum is 1
+                            parseInt(e.target.value, 10)
+                          )
                       }
                       min="1"
                       max={product.quantity}
-                      style={{ pointerEvents: "none" }} // Disable interaction with the input field
-                      onFocus={(e) => e.target.blur()} // Prevent focus and text selection
                     />
 
                     <button
@@ -570,25 +721,56 @@ const PlantService = ({ products }) => {
         </div>
         {/* Map Container */}
         <div className="map-container flex-grow relative">
+          <div style={{ position: "relative", height: "100%", width: "100%" }}>
+          <ViewToggle view={mapView} setView={setMapView} />
           <MapContainer
             center={location}
             zoom={zoom}
             style={{ height: "100%", width: "100%" }}
             scrollWheelZoom={false}
-            maxBounds={karachiBounds}
+            maxBounds={pakistanBounds}
             maxBoundsViscosity={1.0}
-            minZoom={12}
+            minZoom={5}
             dragging={true}
             worldCopyJump={false}
             noWrap={true}
           >
             <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              key={mapView}
+              url={TILES[mapView].url}
+              attribution={TILES[mapView].attribution}
             />
             <MapClickHandler />
             {marker && <Marker position={marker} icon={customIcon} />}
+            {suggestedSpots.map((s, i) => (
+              <Marker key={`sp-${i}`} position={[s.lat, s.lng]} icon={suggestedIcon}>
+                <Popup>
+                  <img src={satThumb(s.lat, s.lng)} alt="satellite view of this spot" style={{ width: 220, height: 132, objectFit: "cover", borderRadius: 6, display: "block", marginBottom: 6 }} onError={(e) => { e.target.style.display = "none"; }} />
+                  <strong>{s.name}</strong>
+                  <br />
+                  <span style={{ fontSize: 12, color: "#555" }}>
+                    {s.category} · score {s.score}
+                  </span>
+                  <br />
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}`} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#1565c0", textDecoration: "underline" }}>📷 See on Google Maps (photos & Street View)</a>
+                  <br />
+                  <button onClick={() => checkGreen(s)} style={{ marginTop: 6, marginRight: 6, padding: "4px 10px", background: "#fff", color: "#2e7d32", border: "1px solid #2e7d32", borderRadius: 6, cursor: "pointer" }}>Check suitability</button>
+                  <button
+                    onClick={() => applySuggestedSpot(s)}
+                    style={{ marginTop: 6, padding: "4px 10px", background: "#2e7d32", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}
+                  >
+                    Use this spot
+                  </button>
+                  {greenById[`${s.lat},${s.lng}`] && (
+                    <div style={{ marginTop: 8, fontSize: 12, color: "#1b5e20", background: "#eaf3ea", padding: "5px 8px", borderRadius: 6 }}>
+                      🌿 {greenById[`${s.lat},${s.lng}`].greenness != null ? `${greenById[`${s.lat},${s.lng}`].greenness}% green — ` : ""}{greenById[`${s.lat},${s.lng}`].note}
+                    </div>
+                  )}
+                </Popup>
+              </Marker>
+            ))}
           </MapContainer>
+          </div>
         </div>
       </div>
       {/* Mobile View */}
@@ -621,14 +803,14 @@ const PlantService = ({ products }) => {
             </div>
 
             <p className="text-black text-sm mb-4 mt-6">
-              Click on the map to set a marker within Karachi's boundaries or
+              Click on the map to set a marker within Pakistan or
               manually enter a location.
             </p>
             <input
               type="text"
               className={`w-full p-3 rounded-md ${
-                locationNotFound ? "border-red-500" : "border-black"
-              } border-solid bg-transparent text-black`}
+                locationNotFound ? "border-red-500" : "border-gray-300"
+              } border-solid bg-white text-gray-800`}
               value={locationName}
               onChange={(e) => {
                 const newLocationName = e.target.value;
@@ -643,7 +825,7 @@ const PlantService = ({ products }) => {
             />
             {loading && <p className="text-black mt-2">Loading...</p>}
             {suggestions.length > 0 && (
-              <ul className="suggestions-list bg-white border border-black mt-2 rounded-md max-h-60 overflow-y-auto">
+              <ul className="suggestions-list bg-white border border-gray-300 mt-2 rounded-md max-h-60 overflow-y-auto">
                 {suggestions.map((suggestion, index) => (
                   <li
                     key={index}
@@ -655,10 +837,25 @@ const PlantService = ({ products }) => {
                 ))}
               </ul>
             )}
+            <button
+              type="button"
+              onClick={detectMyLocation}
+              className="w-full mt-3 p-2.5 rounded-md border border-green-600 text-green-700 bg-white hover:bg-green-50 flex items-center justify-center gap-2 transition text-sm font-medium"
+            >
+              📍 Detect my location
+            </button>
+            <button
+              type="button"
+              onClick={suggestSpots}
+              disabled={loadingSpots}
+              className="w-full mt-2 p-2.5 rounded-md bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2 transition text-sm font-medium disabled:opacity-60"
+            >
+              {loadingSpots ? "Finding spots…" : "🌱 Suggest public spots (AI)"}
+            </button>
             <h3 className="text-black text-xl mt-6">Select Products</h3>
             <select
               onChange={handleProductChange}
-              className="w-full p-3 mt-2 rounded-md border-black border-solid bg-transparent text-black"
+              className="w-full p-3 mt-2 rounded-lg border border-gray-300 bg-white text-gray-800 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
               value={defaultProduct}
               disabled={!isLocationValid}
             >
@@ -697,19 +894,17 @@ const PlantService = ({ products }) => {
 
                     <input
                       type="number"
-                      className="quantity-input w-20 p-2 border border-black rounded-md text-black text-center"
+                      className="quantity-input w-20 p-2 border border-gray-300 rounded-md text-black text-center"
                       value={product.quantity}
                       onChange={
                         (e) =>
                           handleQuantityChange(
                             product.id,
-                            Math.max(1, parseInt(e.target.value))
-                          ) // Ensure minimum is 1
+                            parseInt(e.target.value, 10)
+                          )
                       }
                       min="1"
                       max={product.quantity}
-                      style={{ pointerEvents: "none" }} // Disable interaction with the input field
-                      onFocus={(e) => e.target.blur()} // Prevent focus and text selection
                     />
 
                     <button
@@ -796,25 +991,56 @@ const PlantService = ({ products }) => {
             isMapClicked ? "opacity-50" : "opacity-100"
           } z-0 overflow-hidden`}
         >
+          <div style={{ position: "relative", height: "100%", width: "100%" }}>
+          <ViewToggle view={mapView} setView={setMapView} />
           <MapContainer
             center={location}
             zoom={zoom}
             style={{ height: "100%", width: "100%" }}
             scrollWheelZoom={false} // Disable scroll wheel zoom on the map
-            maxBounds={karachiBounds}
+            maxBounds={pakistanBounds}
             maxBoundsViscosity={1.0}
-            minZoom={12}
+            minZoom={5}
             dragging={true}
             worldCopyJump={false}
             noWrap={true}
           >
             <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              key={mapView}
+              url={TILES[mapView].url}
+              attribution={TILES[mapView].attribution}
             />
             <MapClickHandler />
             {marker && <Marker position={marker} icon={customIcon} />}
+            {suggestedSpots.map((s, i) => (
+              <Marker key={`sp-${i}`} position={[s.lat, s.lng]} icon={suggestedIcon}>
+                <Popup>
+                  <img src={satThumb(s.lat, s.lng)} alt="satellite view of this spot" style={{ width: 220, height: 132, objectFit: "cover", borderRadius: 6, display: "block", marginBottom: 6 }} onError={(e) => { e.target.style.display = "none"; }} />
+                  <strong>{s.name}</strong>
+                  <br />
+                  <span style={{ fontSize: 12, color: "#555" }}>
+                    {s.category} · score {s.score}
+                  </span>
+                  <br />
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}`} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#1565c0", textDecoration: "underline" }}>📷 See on Google Maps (photos & Street View)</a>
+                  <br />
+                  <button onClick={() => checkGreen(s)} style={{ marginTop: 6, marginRight: 6, padding: "4px 10px", background: "#fff", color: "#2e7d32", border: "1px solid #2e7d32", borderRadius: 6, cursor: "pointer" }}>Check suitability</button>
+                  <button
+                    onClick={() => applySuggestedSpot(s)}
+                    style={{ marginTop: 6, padding: "4px 10px", background: "#2e7d32", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}
+                  >
+                    Use this spot
+                  </button>
+                  {greenById[`${s.lat},${s.lng}`] && (
+                    <div style={{ marginTop: 8, fontSize: 12, color: "#1b5e20", background: "#eaf3ea", padding: "5px 8px", borderRadius: 6 }}>
+                      🌿 {greenById[`${s.lat},${s.lng}`].greenness != null ? `${greenById[`${s.lat},${s.lng}`].greenness}% green — ` : ""}{greenById[`${s.lat},${s.lng}`].note}
+                    </div>
+                  )}
+                </Popup>
+              </Marker>
+            ))}
           </MapContainer>
+          </div>
         </div>
       </div>
     </div>

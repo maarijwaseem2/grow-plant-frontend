@@ -1,125 +1,84 @@
 import React from "react";
-import {
-  FaCcMastercard,
-  FaCcVisa,
-  FaFacebook,
-  FaTwitter,
-  FaYoutube,
-  FaLinkedin,
-  FaInstagramSquare,
-} from "react-icons/fa";
-import "./Footer.css";
+import { useNavigate } from "react-router-dom";
+import { ThemeProvider } from "@mui/material/styles";
+import { Box, Container, Grid, Typography, Stack, Link as MuiLink, Divider, IconButton } from "@mui/material";
+import { Leaf, Facebook, Twitter, Instagram, Linkedin, Phone, Mail, MapPin } from "lucide-react";
+import theme from "../theme";
+
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const cols = [
+    { title: "Explore", links: [
+      { label: "Buy Plants", to: "/Page-Shop" },
+      { label: "Donate", to: "/donation" },
+      { label: "Plant Services", to: "/plant-services" },
+      { label: "Home Services", to: "/home-services" },
+    ]},
+    { title: "Company", links: [
+      { label: "About Us", to: "/about-us" },
+      { label: "Contact", to: "/contact" },
+      { label: "Complain", to: "/complain" },
+    ]},
+  ];
+
   return (
-    <footer className="bg-white text-gray-600 py-8 border-t border-gray-300">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="font-bold text-gray-900 mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  Return & Refund Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  Shipping
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  FAQs
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-900 mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  Find Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  Affiliate
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  Career
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-900 mb-4">Business</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  Our Press
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  Check Out
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-green-500">
-                  Shop
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-900 mb-4">Call us 24/7</h3>
-            <p className="text-2xl font-bold text-green-500 mb-2">03111220022</p>
-            <p className="mb-2 text-gray-700">Grow.Green Gulshan e Iqbal Karachi</p>
-            <p className="mb-4 text-gray-700">contact@grow.green</p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-blue-600 hover:text-blue-800">
-                <FaFacebook size={20} />
-              </a>
-              <a href="#" className="text-blue-400 hover:text-blue-600">
-                <FaTwitter size={20} />
-              </a>
-              <a href="#" className="text-red-600 hover:text-red-800">
-                <FaYoutube size={20} />
-              </a>
-              <a href="#" className="text-blue-700 hover:text-blue-900">
-                <FaLinkedin size={20} />
-              </a>
-              <a href="#" className="text-pink-600 hover:text-pink-800">
-                <FaInstagramSquare size={20} />
-              </a>
-            </div>
-          </div>
-        </div>
-        <div className="mt-8 pt-8 border-t border-gray-300 flex flex-col sm:flex-row justify-between items-center">
-          <p className="mb-4 sm:mb-0 text-gray-700">
-            © 2024 Grow.Green. All Rights Reserved
-          </p>
-          <div className="flex items-center">
-            <span className="mr-2">We Are Using Safe Payment For</span>
-            <FaCcMastercard className="h-8 w-8 text-orange-500" />
-            <FaCcVisa className="h-8 w-8 ml-2 text-blue-600" />
-          </div>
-        </div>
-      </div>
-    </footer>
+    <ThemeProvider theme={theme}>
+      <Box component="footer" sx={{ bgcolor: "#10281a", color: "#cfe0d3", pt: { xs: 5, md: 7 }, pb: 3, mt: 0 }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={4}>
+            {/* Brand */}
+            <Grid item xs={12} md={4}>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+                <Leaf size={24} color="#66bb6a" />
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", letterSpacing: 0.5 }}>GO GREEN</Typography>
+              </Stack>
+              <Typography variant="body2" sx={{ color: "#a9c3b3", maxWidth: 300, mb: 2 }}>
+                Greening Pakistan's cities with AI-guided, community-driven tree plantation.
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
+                  <IconButton key={i} size="small" sx={{ color: "#cfe0d3", bgcolor: "rgba(255,255,255,0.06)", "&:hover": { bgcolor: "rgba(102,187,106,0.25)", color: "#fff" } }}>
+                    <Icon size={18} />
+                  </IconButton>
+                ))}
+              </Stack>
+            </Grid>
+
+            {/* Link columns */}
+            {cols.map((c) => (
+              <Grid item xs={6} md={2} key={c.title}>
+                <Typography variant="subtitle2" sx={{ color: "#fff", fontWeight: 700, mb: 1.5 }}>{c.title}</Typography>
+                <Stack spacing={1}>
+                  {c.links.map((l) => (
+                    <MuiLink key={l.label} component="button" onClick={() => { navigate(l.to); window.scrollTo(0, 0); }}
+                      underline="none" sx={{ color: "#a9c3b3", textAlign: "left", fontSize: "0.9rem", "&:hover": { color: "#66bb6a" } }}>
+                      {l.label}
+                    </MuiLink>
+                  ))}
+                </Stack>
+              </Grid>
+            ))}
+
+            {/* Contact */}
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle2" sx={{ color: "#fff", fontWeight: 700, mb: 1.5 }}>Get in touch</Typography>
+              <Stack spacing={1.2}>
+                <Stack direction="row" spacing={1.2} alignItems="center"><Phone size={16} color="#66bb6a" /><Typography variant="body2" sx={{ color: "#cfe0d3" }}>0311 1220022</Typography></Stack>
+                <Stack direction="row" spacing={1.2} alignItems="center"><Mail size={16} color="#66bb6a" /><Typography variant="body2" sx={{ color: "#cfe0d3" }}>contact@gogreen.pk</Typography></Stack>
+                <Stack direction="row" spacing={1.2} alignItems="center"><MapPin size={16} color="#66bb6a" /><Typography variant="body2" sx={{ color: "#cfe0d3" }}>Gulshan-e-Iqbal, Karachi</Typography></Stack>
+              </Stack>
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.1)" }} />
+          <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems="center" spacing={1}>
+            <Typography variant="body2" sx={{ color: "#8fae9d" }}>© {new Date().getFullYear()} Go Green. All rights reserved.</Typography>
+            <Typography variant="body2" sx={{ color: "#8fae9d" }}>Made with 🌱 for a greener Pakistan</Typography>
+          </Stack>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 };
 

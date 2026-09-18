@@ -4,14 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { CheckIcon } from "@heroicons/react/20/solid";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import PaymentForm from "./PaymentForm";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 import axios from "axios";
 import { decodeJwt } from "jose";
 
-const stripePromise = loadStripe(
-  "pk_test_51OJXz3I01IywrPiuBqUt4xXDzitUHLkLjTbFNfLdUP2JHOnl3rUmj0DmDPtklzZBItOklPKI0jx5lO77f1Cb4eEa00tXSGBm82"
-);
 
 const tiers = [
   {
@@ -92,13 +87,6 @@ const Subscription = () => {
       setLoading(true);
       setError(null);
 
-      // Validate file upload
-      if (!selectedFile) {
-        setError("Please upload an image for your order");
-        setLoading(false);
-        return;
-      }
-
       // Map selected products to include their IDs and quantities
       const products = selectedProducts.map((product) => ({
         plantId: product.id,
@@ -139,7 +127,7 @@ const Subscription = () => {
       }
 
       // Append the selected file - NOTE: This should match the backend expectation (image not file)
-      formData.append("image", selectedFile);
+      if (selectedFile) formData.append("image", selectedFile);
 
       // Log formData contents for debugging
       console.log("Form data entries:");
@@ -444,61 +432,7 @@ const Subscription = () => {
               />
             </div>
 
-            {/* File Upload Section */}
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Order Image
-              </label>
-              <div className="flex items-center justify-center w-full">
-                <label
-                  htmlFor="file-upload"
-                  className="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500"
-                >
-                  <div className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg">
-                    {previewUrl ? (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <img
-                          src={previewUrl}
-                          alt="Preview"
-                          className="max-h-full max-w-full object-contain"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <PhotoIcon className="w-10 h-10 mb-3 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-500">
-                          <span className="font-semibold">Click to upload</span>{" "}
-                          or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          PNG, JPG, GIF up to 10MB
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    id="file-upload"
-                    name="file-upload"
-                    type="file"
-                    ref={fileInputRef}
-                    className="sr-only"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                </label>
-              </div>
-              {selectedFile && (
-                <p className="mt-2 text-sm text-gray-600">
-                  Selected: {selectedFile.name}
-                </p>
-              )}
-              {!selectedFile && (
-                <p className="mt-2 text-sm text-red-600">
-                  * Image upload is required
-                </p>
-              )}
-            </div>
-
+            
             <div className="border-t pt-4">
               <div className="flex justify-between mb-2">
                 <span>Initial Products Total:</span>
@@ -523,9 +457,9 @@ const Subscription = () => {
             {!showPaymentForm ? (
               <button
                 onClick={handleOrderPlacement}
-                disabled={loading || !selectedFile}
+                disabled={loading}
                 className={`mt-4 w-full ${
-                  loading || !selectedFile
+                  loading
                     ? "bg-gray-400"
                     : "bg-green-500 hover:bg-green-600"
                 } text-white py-2 rounded-md flex justify-center items-center`}
@@ -562,7 +496,6 @@ const Subscription = () => {
           </div>
 
           {showPaymentForm && (
-            <Elements stripe={stripePromise}>
               <PaymentForm
                 totalPrice={calculateTotalCost().toFixed(2)}
                 onClose={() => setShowPaymentForm(false)}
@@ -571,7 +504,6 @@ const Subscription = () => {
                   navigate("/plant-services"); // Navigate to a success page after payment
                 }}
               />
-            </Elements>
           )}
         </div>
       )}

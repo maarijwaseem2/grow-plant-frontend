@@ -1,72 +1,90 @@
 import React, { useState } from "react";
-import "./Contact.css"; // Keep the existing CSS file
-import JarImage from "../Modules/images/jar.png";
-import Image from "../Modules/images/Plant5.png";
+import { ThemeProvider } from "@mui/material/styles";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { API_BASE_URL } from "../config";
+import axios from "axios";
+import {
+  Box, Container, Grid, Typography, Button, TextField, Card, CardContent, Avatar, Stack,
+} from "@mui/material";
+import { Leaf, Phone, Mail, MapPin, Clock, Send } from "lucide-react";
+import theme from "../theme";
 
-function ContactUs() {
-  // State for email box
-  const [isEmailBoxExpanded, setIsEmailBoxExpanded] = useState(false);
+const Contact = () => {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  // Function to handle email box click
-  const handleEmailBoxClick = () => {
-    setIsEmailBoxExpanded((prev) => !prev); // Toggle the state
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.message) { toast.error("Please fill in all fields."); return; }
+    try {
+      await axios.post(`${API_BASE_URL}/contact`, form);
+      toast.success("Thanks for reaching out! We'll reply by email soon. 🌱");
+      setForm({ name: "", email: "", message: "" });
+    } catch {
+      toast.error("Couldn't send your message right now. Please try again.");
+    }
   };
 
+  const info = [
+    { icon: <Phone size={22} />, title: "Call us", value: "0311 1220022" },
+    { icon: <Mail size={22} />, title: "Email", value: "contact@gogreen.pk" },
+    { icon: <MapPin size={22} />, title: "Visit", value: "Gulshan-e-Iqbal, Karachi" },
+    { icon: <Clock size={22} />, title: "Hours", value: "Mon–Sat, 9am–6pm" },
+  ];
+
   return (
-    <>
-      <div className="contact-container h-screen flex items-center justify-center">
-        {/* Combined Content */}
-        <div className="flex flex-col sm:flex-row items-center sm:justify-center text-center sm:text-left">
-          <h1 className="plant-treetext text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl sm:mr-16 md:mr-24 lg:mr-28 mb-4 sm:mb-0 font-semibold sm:items-start">
-            Plant a tree, <br /> save a life
-          </h1>
-          <img
-            src={JarImage}
-            alt="Centered Image"
-            className="w-[350px] h-auto sm:ml-12 md:ml-16 lg:ml-24 rounded-lg"
-          />
-        </div>
-      </div>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ pt: "64px", bgcolor: "#fff" }}>
+        <Box sx={{ background: "linear-gradient(160deg, #1b5e20, #2e7d32)", color: "#fff", py: { xs: 6, md: 8 } }}>
+          <Container maxWidth="md" sx={{ textAlign: "center" }}>
+            <Stack direction="row" spacing={1} justifyContent="center" alignItems="center" sx={{ mb: 2, opacity: 0.9 }}>
+              <Leaf size={20} /><Typography variant="body2" sx={{ fontWeight: 600, letterSpacing: 1 }}>CONTACT US</Typography>
+            </Stack>
+            <Typography variant="h2" sx={{ fontWeight: 800, fontSize: { xs: "2rem", md: "3rem" }, mb: 1 }}>We'd love to hear from you</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9 }}>Questions, ideas or partnerships — reach out anytime.</Typography>
+          </Container>
+        </Box>
 
-      {/* Updated additional-info-container with no padding or margin */}
-      <div className="w-full additional-info-container mt-0 px-0">
-        <div className="flex flex-col md:flex-row justify-start">
-          {/* Column One */}
-          <div className="flex flex-[16%] min-h-[872px] justify-center items-center md:justify-start">
-            <p className="sideways-text text-6xl font-semibold">Greenery</p>  {/* Updated font size to text-4xl */}
-          </div>
-
-          {/* Column Two with custom background color */}
-          <div className="flex flex-[34%] min-h-[872px] my-6 md:my-0 bg-[rgb(240,238,238)] bottom-align">
-            <img
-              src={Image}
-              className="object-cover tree-plant max-h-[700px]"
-              style={{ width: '900px'}} // Adjust width as needed
-              />
-          </div>
-
-          {/* Column Three */}
-          <div className="flex-[50%] min-h-[872px] flex flex-col items-center md:items-start text-center md:text-left space-y-4 px-6 md:px-12">
-            <h2 className="contact-us-heading text-2xl md:text-3xl font-semibold tracking-[2px]">Contact Us</h2>
-            <div className="design-underline w-16 h-1 border-t-2 border-dashed border-black mb-4"></div> {/* Added margin-bottom */}
-            <p className="hear-text text-sm md:text-base sm:text-left"> {/* Decreased text size */}
-              We would love to hear from you! Feel free to reach out to us for any inquiries or collaboration opportunities.
-            </p>
-            <div
-              className={`info-box cursor-pointer py-2 px-4 transition-all duration-300 ease-in-out ${
-                isEmailBoxExpanded ? 'w-[250px]' : 'w-[130px]'
-              }`}
-              onClick={handleEmailBoxClick}
-            >
-              <p className="m-0 p-1 text-center">
-                {isEmailBoxExpanded ? 'gogreen@gmail.com' : 'Email'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+        <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={5}>
+              <Stack spacing={2}>
+                {info.map((c, i) => (
+                  <Card key={i} variant="outlined" sx={{ borderRadius: 3 }}>
+                    <CardContent sx={{ display: "flex", alignItems: "center", gap: 2, p: 2.5 }}>
+                      <Avatar sx={{ bgcolor: "#eaf3ea", color: "primary.main", width: 48, height: 48 }}>{c.icon}</Avatar>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">{c.title}</Typography>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{c.value}</Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Stack>
+            </Grid>
+            <Grid item xs={12} md={7}>
+              <Card variant="outlined" sx={{ borderRadius: 4 }}>
+                <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+                  <Typography variant="h5" sx={{ fontWeight: 800, mb: 3 }}>Send us a message</Typography>
+                  <Box component="form" onSubmit={submit} noValidate>
+                    <Stack spacing={2.5}>
+                      <TextField fullWidth label="Your name" value={form.name} onChange={(e) => set("name", e.target.value)} />
+                      <TextField fullWidth label="Email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+                      <TextField fullWidth label="Message" multiline rows={5} value={form.message} onChange={(e) => set("message", e.target.value)} />
+                      <Button type="submit" variant="contained" size="large" startIcon={<Send size={18} />} sx={{ py: 1.3, alignSelf: "flex-start", px: 4 }}>
+                        Send message
+                      </Button>
+                    </Stack>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
-}
+};
 
-export default ContactUs;
+export default Contact;

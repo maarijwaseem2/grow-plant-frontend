@@ -1,339 +1,245 @@
-/* General Reset */
-* {
-    box-sizing: border-box;
-    font-family: Jost, sans-serif;
-    margin: 0;
-    padding: 0;
-    user-select: none;
+/* ===== Go Green — clean responsive header ===== */
+:root {
+  --gg-green: #2e7d32;
+  --gg-green-dark: #1b5e20;
+  --gg-green-light: #66bb6a;
+  --gg-ink: #1f2a24;
+  --gg-muted: #5b6b62;
 }
 
-header {
-    display: flex;
-    flex-direction: column;
-    width: 100vw;
-    background-color: transparent;
-    overflow: hidden;
+.gg-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #ecefec;
+  box-shadow: 0 2px 10px rgba(27, 94, 32, 0.06);
+  z-index: 1000;
+  font-family: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
-/* Top Header Box */
-.top-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #ffffff;
-    padding: 3px 24px;
-    border-bottom: 1px solid rgb(201, 199, 199);
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 10;
-    background-color: transparent; /* Default background */
-    transition: background-color 0.3s ease; /* Smooth transition for background color */
-    cursor: default;
+.gg-header-inner {
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-/* Bottom Header Box */
-.bottom-box {
-    display: flex;
-    align-items: center;
-    padding: 9px 24px;
-    position: fixed;
-    top: 24px;
-    left: 0;
-    width: 100%;
-    z-index: 5;
-    background-color: transparent; /* Default background */
-    transition: background-color 0.3s ease; /* Smooth transition for background color */
-    cursor: default;
+/* Brand */
+.gg-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+.gg-leaf { font-size: 20px; line-height: 1; }
+.gg-brand-text {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--gg-ink);
+}
+.gg-brand-accent { color: var(--gg-green); }
+
+/* Desktop nav */
+.gg-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.gg-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--gg-muted);
+  padding: 8px 12px;
+  border-radius: 8px;
+  position: relative;
+  transition: color 0.2s ease, background 0.2s ease;
+  font-family: inherit;
+}
+.gg-link:hover { color: var(--gg-green); background: #f2f8f3; }
+.gg-link.active { color: var(--gg-green); font-weight: 600; }
+.gg-caret { font-size: 0.7rem; }
+
+/* Services dropdown */
+.gg-services { position: relative; }
+.gg-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 190px;
+  background: #fff;
+  border: 1px solid #ecefec;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(27, 94, 32, 0.12);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1100;
+}
+.gg-dropdown-item {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  color: var(--gg-ink);
+  transition: background 0.15s ease, color 0.15s ease;
+  font-family: inherit;
+}
+.gg-dropdown-item:hover { background: #f2f8f3; color: var(--gg-green); }
+
+/* Right actions */
+.gg-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+.gg-cart {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+}
+.gg-cart-icon { width: 24px; height: 24px; object-fit: contain; }
+.gg-cart-badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  background: var(--gg-green);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Apply hover effect when either box is hovered */
-.top-box.hovered,
-.bottom-box.hovered {
-    color: black; /* Change text color to black when hovered */
-    background-color: white; /* Change background to white on hover */
+/* Auth */
+.gg-auth { display: flex; align-items: center; gap: 8px; }
+.gg-welcome { font-size: 0.9rem; color: var(--gg-ink); font-weight: 500; }
+
+.gg-btn {
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
 }
+.gg-btn-primary { background: var(--gg-green); color: #fff; }
+.gg-btn-primary:hover { background: var(--gg-green-dark); }
+.gg-btn-ghost { background: transparent; color: var(--gg-green); }
+.gg-btn-ghost:hover { background: #f2f8f3; }
+.gg-btn-outline { background: transparent; color: var(--gg-green); border-color: var(--gg-green); }
+.gg-btn-outline:hover { background: var(--gg-green); color: #fff; }
+.gg-btn-block { width: 100%; }
 
-.bottom-box.hovered {
-    border-bottom: 1px solid rgb(201, 199, 199);
+/* Hamburger (hidden on desktop) */
+.gg-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
 }
-
-/* Delivery text style */
-.delivery-text {
-    font-size: clamp(10px, 2vw, 11px);
-    white-space: nowrap;
-    opacity: 0.8;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    color: white; /* Default color */
-    transition: color 0.3s ease;
+.gg-burger span {
+  display: block;
+  height: 2.5px;
+  width: 100%;
+  background: var(--gg-ink);
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.2s ease;
 }
+.gg-burger.open span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+.gg-burger.open span:nth-child(2) { opacity: 0; }
+.gg-burger.open span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
 
-.delivery-text:hover {
-    opacity: 1;
-    transform: scale(1.05);
-    margin-left: 8px;
+/* Mobile menu panel */
+.gg-mobile {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #ecefec;
+  box-shadow: 0 12px 24px rgba(27, 94, 32, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 16px;
+  gap: 2px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  z-index: 999;
 }
-
-/* Authentication links style */
-.auth-links {
-    display: flex;
-    gap: 18px;
-    align-items: center;
-    margin-right: 15px;
-    opacity: 0.8;
+.gg-mobile.open {
+  max-height: calc(100vh - 64px);
+  opacity: 1;
+  pointer-events: auto;
+  overflow-y: auto;
 }
-
-.auth-links div {
-    font-size: 11.5px;
-    color: white;
-    cursor: pointer;
-    transition: color 0.3s ease; /* Smooth transition for color change */
+.gg-mobile-link {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 12px 8px;
+  font-size: 1rem;
+  color: var(--gg-ink);
+  cursor: pointer;
+  border-radius: 8px;
+  font-family: inherit;
 }
-
-.auth-links div:hover {
-    text-decoration: underline;
-    font-weight: bolder !important;
+.gg-mobile-link:hover { background: #f2f8f3; color: var(--gg-green); }
+.gg-mobile-sub { padding-left: 22px; font-size: 0.95rem; color: var(--gg-muted); }
+.gg-mobile-group-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #9aa8a0;
+  padding: 10px 8px 4px;
+  font-weight: 600;
 }
-
-/* Logo Text Style */
-.logo-text {
-    font-size: 24px;
-    font-weight: bold;
-    color: white; /* Default color */
-    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3), 4px 4px 0 rgba(0, 0, 0, 0.2);
-    transition: color 0.3s ease; /* Smooth transition for color change */
+.gg-mobile-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #ecefec;
 }
+.gg-mobile-auth .gg-welcome { padding: 4px 8px; }
 
-.logo-text:hover {
-    cursor: pointer;
+/* ===== Responsive breakpoint ===== */
+@media (max-width: 900px) {
+  .gg-nav { display: none; }
+  .gg-auth { display: none; }
+  .gg-burger { display: flex; }
 }
-
-/* Navigation Links Style */
-.nav-links {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 15px;
-    position: fixed;
-    left: 195px;
-    top: 39px;
-    z-index: 1000;
-    color: white; /* Default color */
-    transition: color 0.3s ease;
-}
-
-.nav-links div {
-    position: relative; /* Added for relative positioning of pseudo-element */
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
-    opacity: 0.6;
-    cursor: pointer;
-    transition: color 0.3s ease; /* Smooth transition for color change */
-}
-
-/* Underline effect only for individual nav links */
-.nav-links div::after {
-    content: "";
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background-color: #1b1b1b;
-    transition: width 0.3s ease-out;
-}
-
-.nav-links div:hover::after {
-    width: 70%; /* Underline width will span the width of the text */
-    transition-delay: 0.1s;
-}
-
-/* Navigation link hover effect */
-.nav-links div:hover {
-    color: black; /* Change to black on hover */
-    opacity: 1;   /* Full opacity on hover */
-}
-
-/* Change color to black when hovered */
-.top-box.hovered .delivery-text,
-.top-box.hovered .auth-links div,
-.bottom-box.hovered .logo-text,
-.bottom-box.hovered .nav-links div {
-    color: black; /* Change text color to black on hover */
-}
-
-/* Remove underline from dropdown items */
-.dropdown-menu .dropdown-item {
-    text-decoration: none; /* Ensure no underline for dropdown items */
-    color: #333;
-    background: none; /* Ensure no background highlight */
-    position: relative; /* Ensure we don't affect other styles */
-}
-
-/* Ensure that the dropdown items do not show underlines */
-.dropdown-menu .dropdown-item::after {
-    content: none; /* Remove the underline (no pseudo-element) */
-}
-
-/* Remove the hover underline effect for dropdown items */
-.dropdown-menu .dropdown-item:hover::after {
-    content: none; /* Ensure no underline effect on hover */
-    width: 0; /* Make sure the underline doesn't appear */
-}
-
-/* Optional: If you want to keep the hover effect color for the dropdown */
-.dropdown-menu .dropdown-item:hover {
-    color: #38b2ac;
-}
-
-/* Vertical line style */
-.vertical-line {
-    width: 1px;
-    height: 15px;
-    background-color: #ffffff; /* Default color */
-    transition: background-color 0.3s ease; /* Smooth transition for background color */
-    cursor: default;
-}
-
-.vertical-line:hover {
-    cursor: default;
-}
-
-/* Change vertical line color to black on hover */
-.top-box.hovered .vertical-line,
-.bottom-box.hovered .vertical-line {
-    background-color: black; /* Change to black on hover */
-}
-
-/* Dropdown menu style */
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-    width: 200px;
-}
-
-.dropdown-menu li {
-    padding: 11px;
-}
-
-/* Services link container and dropdown */
-.services-link-container {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-}
-
-.services-link-container::after {
-    content: '▼';
-    font-size: 10px;
-    color: #00ff00;
-    margin-left: 6px; /* Moves the arrow to the right of the text */
-    transition: transform 0.3s ease;
-}
-
-.services-link-container:hover::after {
-    transform: rotate(180deg); /* Optionally, you can rotate the arrow when the dropdown is open */
-}
-
-.services-link-container:hover .dropdown-menu {
-    display: block; /* Show dropdown when the services link is hovered */
-}
-
-/* Change arrow color when hovered */
-.services-link-container:hover::after,
-.top-box.hovered ~ .bottom-box .services-link-container::after,
-.bottom-box.hovered ~ .top-box .services-link-container::after {
-    color: black;
-}
-
-/* Add hover effect for all items in top and bottom box */
-.top-box:hover .delivery-text,
-.top-box:hover .auth-links div,
-.bottom-box:hover .logo-text,
-.bottom-box:hover .nav-links div,
-.top-box:hover .vertical-line,
-.bottom-box:hover .vertical-line {
-    color: black; /* Ensure color change on hover */
-}
-
-.top-box:hover .vertical-line,
-.bottom-box:hover .vertical-line {
-    background-color: black; /* Ensure vertical line changes to black */
-}
-
-.icon-container {
-    display: flex;
-    gap: 44px;
-    position: relative;  /* Keep it relative to the bottom-box */
-    margin-left: auto;   /* Push it to the right end of the container */
-}
-
-/* Adjust the cart icon style */
-.cart-icon {
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    filter: brightness(1.3) invert(1); /* Brighter white by increasing brightness */
-    transition: filter 0.3s ease;
-    position: relative; /* Position relative for the cart badge */
-}
-
-/* Cart badge styling */
-.cart-badge {
-    position: absolute;
-    top: -6px !important;
-    right: 79px !important;
-    font-size: 12px;
-    background-color: #00ff00 !important; /* Red color */
-    color: white !important;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* User Icon style (new icon) */
-.notification-icon {
-    width: 23px; /* Adjust the size of the user icon */
-    height: 27px; /* Adjust the size of the user icon */
-    cursor: pointer;
-    filter: brightness(0) invert(1); /* Make the user icon white */
-    transition: filter 0.3s ease; /* Smooth transition for color change */
-    margin-top: 2px;
-    margin-right: 23px;
-}
-
-
-/* When either the top or bottom box is hovered, make the icons black */
-.top-box.hovered .cart-icon,
-.bottom-box.hovered .cart-icon,
-.top-box.hovered .notification-icon,
-.bottom-box.hovered .notification-icon {
-    filter: none; /* Remove the filter to return the icons to their original color (black) */
-}
-
-/* Optional: Add hover effect to the icons */
-.cart-icon:hover, .notification-icon:hover {
-    transform: scale(1.1); /* Slight scale-up effect for hover */
-}
-
-/* When either the top or bottom box is hovered, change the cart-badge color to black */
-.top-box.hovered .cart-badge,
-.bottom-box.hovered .cart-badge {
-    background-color: black !important; /* Change background to black */
-    color: white !important; /* Ensure the text remains white */
-}
-

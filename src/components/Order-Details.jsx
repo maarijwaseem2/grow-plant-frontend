@@ -2,14 +2,9 @@ import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "../config";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 import PaymentForm from "./PaymentForm";
 import { decodeJwt } from "jose";
 
-const stripePromise = loadStripe(
-  "pk_test_51OJXz3I01IywrPiuBqUt4xXDzitUHLkLjTbFNfLdUP2JHOnl3rUmj0DmDPtklzZBItOklPKI0jx5lO77f1Cb4eEa00tXSGBm82"
-);
 
 const DeliveryForm = () => {
   // State for user information
@@ -416,7 +411,6 @@ const DeliveryForm = () => {
       </div>
 
       {showPaymentForm && (
-        <Elements stripe={stripePromise}>
           <PaymentForm
             totalPrice={total}
             onClose={() => setShowPaymentForm(false)}
@@ -425,7 +419,6 @@ const DeliveryForm = () => {
               navigate("/plant-services"); // Navigate to a success page after payment
             }}
           />
-        </Elements>
       )}
     </div>
   );

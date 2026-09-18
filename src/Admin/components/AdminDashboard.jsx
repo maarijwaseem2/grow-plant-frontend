@@ -1,826 +1,453 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../config";
-import {
-  FiEdit,
-  FiTrash2,
-  FiEye,
-  FiDollarSign,
-  FiPackage,
-  FiShoppingBag,
-  FiUser,
-} from "react-icons/fi";
-import { BiPlus } from "react-icons/bi";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ThemeProvider } from "@mui/material/styles";
+import {
+  Box, Container, Grid, Typography, Card, CardContent, Avatar, Tabs, Tab, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Button, Stack, CircularProgress,
+  Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Tooltip, InputAdornment,
+} from "@mui/material";
+import { Leaf, Sprout, ShoppingBag, Users, LogOut, Wrench, Plus, Pencil, Trash2, Upload, Home, CreditCard, Check, X, Search, Mail } from "lucide-react";
+import theme from "../../theme";
+import NotificationBell from "../../components/NotificationBell";
+
+const statusColor = { Pending: "default", Assigned: "warning", "In Progress": "info", Completed: "success" };
+const CATEGORIES = ["Indoor Plants", "Outdoor Plants", "Fruits", "Flowers", "Vegetables", "Herbs", "Seeds", "Soil & Compost", "Fertilizers", "Pots & Planters", "Tools", "Pest Control", "Watering"];
+const emptyPlant = { name: "", price: "", quantity: "", category: "", description: "" };
 
 const AdminDashboard = () => {
-  const [assignModal, setAssignModal] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [selectedService, setSelectedService] = useState(null);
-  const [selectedGardener, setSelectedGardener] = useState("");
-  const [gardeners, setGardeners] = useState([]);
-  const [activeTab, setActiveTab] = useState("plants");
-  const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState("");
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [previewImage, setPreviewImage] = useState(null);
-  const [plantServices, setPlantServices] = useState([]);
+  const navigate = useNavigate();
+  const [tab, setTab] = useState(0);
   const [plants, setPlants] = useState([]);
-  const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [services, setServices] = useState([]);
+  const [homeServices, setHomeServices] = useState([]);
+  const [assignHsSel, setAssignHsSel] = useState({});
   const [payments, setPayments] = useState([]);
-  const baseUrl = `${API_BASE_URL}/uploads/`;
-  const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    quantity: "",
-    description: "",
-    category: "",
-    image: null,
-  });
+  const [contacts, setContacts] = useState([]);
+  const [gardenerList, setGardenerList] = useState([]);
+  const [assignSel, setAssignSel] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [plantDialog, setPlantDialog] = useState({ open: false, mode: "add", id: null });
+  const [plantForm, setPlantForm] = useState(emptyPlant);
+  const [plantImage, setPlantImage] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [q, setQ] = useState("");
+  const uploads = `${API_BASE_URL}/uploads/`;
+  const authHeader = { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } };
+  const setPf = (k, v) => setPlantForm((f) => ({ ...f, [k]: v }));
 
-  const categories = [
-    "Indoor Plants",
-    "Outdoor Plants",
-    "Fruits",
-    "Herbs",
-    "Flowers",
-    "Vegetables",
-  ];
+  const refreshPlants = async () => {
+    const p = await axios.get(`${API_BASE_URL}/plants`);
+    setPlants(p.data?.data || []);
+  };
+  const loadServices = async () => {
+    try { const s = await axios.get(`${API_BASE_URL}/services`); setServices(s.data?.data || s.data || []); } catch { /* ignore */ }
+  };
+  const loadHomeServices = async () => {
+    try { const h = await axios.get(`${API_BASE_URL}/home-service`, authHeader); setHomeServices(h.data?.data || h.data || []); } catch { /* ignore */ }
+  };
+  const loadPayments = async () => {
+    try { const pr = await axios.get(`${API_BASE_URL}/payments`, authHeader); setPayments(pr.data?.data || pr.data || []); } catch { /* ignore */ }
+  };
+  const loadContacts = async () => {
+    try { const cr = await axios.get(`${API_BASE_URL}/contact`, authHeader); setContacts(cr.data?.data || cr.data || []); } catch { /* ignore */ }
+  };
+  const loadGardeners = async () => {
+    try { const gr = await axios.get(`${API_BASE_URL}/user/gardeners/all`, authHeader); setGardenerList(gr.data?.data || gr.data || []); } catch { /* ignore */ }
+  };
 
-  // Fetch all data on mount
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       try {
-        const plantsResponse = await axios.get(`${API_BASE_URL}/plants`);
-        setPlants(plantsResponse.data.data);
-
-        const ordersResponse = await axios.get(`${API_BASE_URL}/order`);
-        setOrders(ordersResponse.data);
-
-        const paymentsResponse = await axios.get(
-          `${API_BASE_URL}/payments`
-        );
-        setPayments(paymentsResponse.data);
-
-        const userResponse = await axios.get(`${API_BASE_URL}/user`);
-        setUsers(userResponse.data.data);
-
-        const servicesResponse = await axios.get(
-          `${API_BASE_URL}/services`
-        );
-        setPlantServices(servicesResponse.data.data || servicesResponse.data);
-
-        const gardenersResponse = await axios.get(
-          `${API_BASE_URL}/user?role=Gardener`
-        );
-        setGardeners(gardenersResponse.data.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
+        const [p, u, o] = await Promise.allSettled([
+          axios.get(`${API_BASE_URL}/plants`),
+          axios.get(`${API_BASE_URL}/user`),
+          axios.get(`${API_BASE_URL}/order`),
+        ]);
+        if (p.status === "fulfilled") setPlants(p.value.data.data || []);
+        if (u.status === "fulfilled") setUsers(u.value.data.data || []);
+        if (o.status === "fulfilled") setOrders(o.value.data.data || o.value.data || []);
+        await loadServices();
+        await loadHomeServices();
+        await loadPayments();
+        await loadContacts();
+        await loadGardeners();
+      } finally { setLoading(false); }
+    })();
   }, []);
 
-  // Handle form input changes
-  const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "image" && files[0]) {
-      setPreviewImage(URL.createObjectURL(files[0]));
-      setFormData({ ...formData, [name]: files[0] });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
+  const gardeners = users.filter((u) => u.role === "Gardener");
+  const gardenerName = (id) => gardeners.find((g) => g.id === id)?.username || "—";
 
-  // Add new plant
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // ---- Plant CRUD ----
+  const openAdd = () => { setPlantForm(emptyPlant); setPlantImage(null); setPlantDialog({ open: true, mode: "add", id: null }); };
+  const openEdit = (p) => {
+    setPlantForm({ name: p.name, price: p.price, quantity: p.quantity, category: p.category, description: p.description || "" });
+    setPlantImage(null);
+    setPlantDialog({ open: true, mode: "edit", id: p.id });
+  };
+  const savePlant = async () => {
+    const { name, price, quantity, category, description } = plantForm;
+    if (!name || price === "" || quantity === "" || !category || !description) { toast.error("Please fill in all fields."); return; }
+    if (plantDialog.mode === "add" && !plantImage) { toast.error("Please add an image."); return; }
+    setSaving(true);
+    const fd = new FormData();
+    fd.append("name", name); fd.append("price", price); fd.append("quantity", quantity);
+    fd.append("description", description); fd.append("category", category);
+    if (plantImage) fd.append("image", plantImage);
     try {
-      const formDataToSubmit = new FormData();
-      formDataToSubmit.append("name", formData.name);
-      formDataToSubmit.append("price", formData.price);
-      formDataToSubmit.append("quantity", formData.quantity);
-      formDataToSubmit.append("description", formData.description);
-      formDataToSubmit.append("category", formData.category);
-      if (formData.image) {
-        formDataToSubmit.append("image", formData.image);
-      }
-      const response = await axios.post(
-        `${API_BASE_URL}/plants`,
-        formDataToSubmit,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      setPlants([...plants, response.data]);
-      setFormData({
-        name: "",
-        price: "",
-        quantity: "",
-        description: "",
-        category: "",
-        image: null,
-      });
-      setPreviewImage(null);
-      setShowModal(false);
-    } catch (error) {
-      console.error("Error adding plant:", error);
-    }
+      if (plantDialog.mode === "add") { await axios.post(`${API_BASE_URL}/plants`, fd, authHeader); toast.success("Plant added."); }
+      else { await axios.patch(`${API_BASE_URL}/plants/${plantDialog.id}`, fd, authHeader); toast.success("Plant updated."); }
+      setPlantDialog({ open: false, mode: "add", id: null }); setPlantImage(null);
+      await refreshPlants();
+    } catch (e) {
+      toast.error(e.response?.data?.message?.error || "Save failed — admin login required.");
+    } finally { setSaving(false); }
+  };
+  const deletePlant = async (id) => {
+    if (!window.confirm("Delete this plant?")) return;
+    try { await axios.delete(`${API_BASE_URL}/plants/${id}`, authHeader); toast.success("Plant deleted."); await refreshPlants(); }
+    catch { toast.error("Delete failed — admin login required."); }
   };
 
-  // Delete plant
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`${API_BASE_URL}/plants/${id}`);
-      setPlants(plants.filter((plant) => plant.id !== id));
-      setShowModal(false);
-    } catch (error) {
-      console.error("Error deleting plant:", error);
-    }
+  const assign = async (serviceId) => {
+    const gardenerId = assignSel[serviceId];
+    if (!gardenerId) { toast.error("Select a gardener first."); return; }
+    try { await axios.patch(`${API_BASE_URL}/services/assign-gardener/${serviceId}`, { gardenerId }, authHeader); toast.success("Gardener assigned."); await loadServices(); }
+    catch (e) { toast.error(e.response?.data?.message?.error || "Failed to assign (admin login required)."); }
+  };
+  const assignHs = async (id) => {
+    const gardenerId = assignHsSel[id];
+    if (!gardenerId) { toast.error("Select a gardener first."); return; }
+    try { await axios.patch(`${API_BASE_URL}/home-service/assign-gardener/${id}`, { gardenerId }, authHeader); toast.success("Gardener assigned."); await loadHomeServices(); }
+    catch (e) { toast.error(e.response?.data?.message?.error || "Failed to assign (admin login required)."); }
+  };
+  const decidePayment = async (id, action) => {
+    try { await axios.patch(`${API_BASE_URL}/payments/${id}/${action}`, {}, authHeader); toast.success(`Payment ${action}d.`); await loadPayments(); }
+    catch (e) { toast.error(e.response?.data?.message?.error || "Action failed (admin login required)."); }
+  };
+  const markContact = async (id) => {
+    try { await axios.patch(`${API_BASE_URL}/contact/${id}/handled`, {}, authHeader); toast.success("Marked as handled."); await loadContacts(); }
+    catch { toast.error("Action failed."); }
+  };
+  const setApproval = async (id, approved) => {
+    try { await axios.patch(`${API_BASE_URL}/user/${id}/approve`, { approved }, authHeader); toast.success(approved ? "Gardener approved." : "Approval revoked."); await loadGardeners(); }
+    catch { toast.error("Action failed."); }
   };
 
-  // Assign gardener to order or service
-  const handleAssignGardener = async () => {
-    if ((!selectedOrder && !selectedService) || !selectedGardener) return;
-
-    try {
-      if (selectedOrder) {
-        await axios.patch(
-          `${API_BASE_URL}/services/assign-gardener/${selectedOrder.id}`,
-          { gardenerId: selectedGardener },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          }
-        );
-        const ordersResponse = await axios.get(`${API_BASE_URL}/order`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        setOrders(ordersResponse.data);
-        setSelectedOrder(null);
-      } else if (selectedService) {
-        await axios.patch(
-          `${API_BASE_URL}/services/assign-gardener/${selectedService.id}`,
-          { gardenerId: selectedGardener },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          }
-        );
-        const servicesResponse = await axios.get(
-          `${API_BASE_URL}/services`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          }
-        );
-        setPlantServices(servicesResponse.data.data || servicesResponse.data);
-        setSelectedService(null);
-      }
-      alert("Gardener assigned!");
-      setAssignModal(false);
-      setSelectedGardener("");
-    } catch (error) {
-      alert("Error assigning gardener");
-      console.error(error);
-    }
-  };
+  const pendingServices = services.filter((s) => s.status === "Pending").length;
+  const metrics = [
+    { icon: <Sprout size={24} />, label: "Plants", value: plants.length, color: "#2e7d32" },
+    { icon: <ShoppingBag size={24} />, label: "Orders", value: orders.length, color: "#1565c0" },
+    { icon: <Users size={24} />, label: "Users", value: users.length, color: "#6a1b9a" },
+    { icon: <Wrench size={24} />, label: "Pending jobs", value: pendingServices, color: "#e65100" },
+  ];
+  const logout = () => { localStorage.removeItem("authToken"); localStorage.removeItem("user"); navigate("/login"); };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="flex">
-        {/* Sidebar */}
-        <div className="w-64 bg-white h-screen shadow-lg fixed">
-          <div className="p-4">
-            <img
-              src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=1973&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Logo"
-              className="w-auto mx-auto mb-8"
-            />
-            <nav>
-              <button
-                onClick={() => setActiveTab("plants")}
-                className={`flex items-center p-3 w-52 text-left mb-2 rounded ${
-                  activeTab === "plants"
-                    ? "bg-green-500 text-white"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <FiPackage className="mr-2" /> Plants Management
-              </button>
-              <button
-                onClick={() => setActiveTab("orders")}
-                className={`flex items-center p-3 w-48 text-left mb-2 rounded ${
-                  activeTab === "orders"
-                    ? "bg-green-500 text-white"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <FiShoppingBag className="mr-2" /> Orders
-              </button>
-              <button
-                onClick={() => setActiveTab("plantServices")}
-                className={`flex items-center p-3 w-56 text-left mb-2 rounded ${
-                  activeTab === "plantServices"
-                    ? "bg-green-500 text-white"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <FiPackage className="mr-2" /> Plant Services
-              </button>
-              <button
-                onClick={() => setActiveTab("payments")}
-                className={`flex items-center p-3 w-48 text-left mb-2 rounded ${
-                  activeTab === "payments"
-                    ? "bg-green-500 text-white"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <FiDollarSign className="mr-2" /> Payments
-              </button>
-              <button
-                onClick={() => setActiveTab("users")}
-                className={`flex items-center p-3 w-48 text-left mb-2 rounded ${
-                  activeTab === "users"
-                    ? "bg-green-500 text-white"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <FiUser className="mr-2" /> Users
-              </button>
-            </nav>
-          </div>
-        </div>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ minHeight: "100vh", bgcolor: "#f4f7f4" }}>
+        <Box sx={{ bgcolor: "#10281a", color: "#fff", py: 2 }}>
+          <Container maxWidth="lg">
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Stack direction="row" spacing={1} alignItems="center"><Leaf size={24} color="#66bb6a" /><Typography variant="h6" sx={{ fontWeight: 800 }}>GO GREEN · Admin</Typography></Stack>
+              <Stack direction="row" spacing={0.5} alignItems="center"><NotificationBell /><Button onClick={logout} startIcon={<LogOut size={16} />} sx={{ color: "#cfe0d3" }}>Logout</Button></Stack>
+            </Stack>
+          </Container>
+        </Box>
 
-        {/* Main Content */}
-        <div className="ml-64 p-8 w-full bg-gray-200 overflow-auto">
-          {/* Plants Management */}
-          {activeTab === "plants" && (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Plants Management</h2>
-                <button
-                  onClick={() => {
-                    setModalType("add");
-                    setShowModal(true);
-                  }}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center"
-                >
-                  <BiPlus className="mr-2" /> Add New Plant
-                </button>
-              </div>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}><CircularProgress /></Box>
+          ) : (
+            <>
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                {metrics.map((m, i) => (
+                  <Grid item xs={6} md={3} key={i}>
+                    <Card variant="outlined" sx={{ borderRadius: 3 }}>
+                      <CardContent>
+                        <Avatar sx={{ bgcolor: `${m.color}18`, color: m.color, width: 46, height: 46, mb: 1.5 }}>{m.icon}</Avatar>
+                        <Typography variant="h4" sx={{ fontWeight: 800 }}>{m.value}</Typography>
+                        <Typography variant="body2" color="text.secondary">{m.label}</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
 
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Image
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Price
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Quantity
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {plants.map((plant) => (
-                      <tr key={plant.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <img
-                            src={`${baseUrl}${plant.image}`}
-                            alt={plant.name}
-                            className="h-12 w-12 rounded-full object-cover"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {plant.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          Rs{plant.price}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {plant.quantity}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {plant.category}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex space-x-2">
-                            <button className="text-blue-500 hover:text-blue-700">
-                              <FiEye size={18} />
-                            </button>
-                            <button className="text-green-500 hover:text-green-700">
-                              <FiEdit size={18} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedItem(plant);
-                                setModalType("delete");
-                                setShowModal(true);
-                              }}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <FiTrash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+              <Paper variant="outlined" sx={{ borderRadius: 3 }}>
+                <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: "divider", px: 2 }}>
+                  <Tab label="Plants" sx={{ textTransform: "none", fontWeight: 600 }} />
+                  <Tab label="Users" sx={{ textTransform: "none", fontWeight: 600 }} />
+                  <Tab label="Service jobs" sx={{ textTransform: "none", fontWeight: 600 }} />
+                  <Tab label="Home services" sx={{ textTransform: "none", fontWeight: 600 }} />
+                  <Tab label="Payments" sx={{ textTransform: "none", fontWeight: 600 }} />
+                  <Tab label="Contact" sx={{ textTransform: "none", fontWeight: 600 }} />
+                  <Tab label="Gardeners" sx={{ textTransform: "none", fontWeight: 600 }} />
+                </Tabs>
+                {(tab === 0 || tab === 1) && (
+                  <Box sx={{ px: 2, pt: 2 }}>
+                    <TextField size="small" fullWidth placeholder={tab === 0 ? "Search plants by name or category…" : "Search users by name or email…"}
+                      value={q} onChange={(e) => setQ(e.target.value)}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><Search size={16} /></InputAdornment> }} />
+                  </Box>
+                )}
 
-          {/* Orders */}
-          {activeTab === "orders" && (
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Orders</h2>
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th>Order Number</th>
-                      <th>Customer</th>
-                      <th>Date</th>
-                      <th>Amount</th>
-                      <th>Quantity</th>
-                      <th>Plant Name</th>
-                      <th>Status</th>
-                      <th>Gardener</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {orders.map((order) => (
-                      <tr key={order.id}>
-                        <td>{order.id}</td>
-                        <td>{`${order.firstName || ""} ${
-                          order.lastName || ""
-                        }`}</td>
-                        <td>
-                          {new Date(order.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}
-                        </td>
-                        <td>Rs{order.total}</td>
-                        <td>
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              order.status === "Pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {order.quantity}
-                          </span>
-                        </td>
-                        <td>{order.name}</td>
-                        <td>{order.status}</td>
-                        <td>
-                          {order.gardenerId
-                            ? gardeners.find((g) => g.id === order.gardenerId)
-                                ?.username || "Assigned"
-                            : "Not Assigned"}
-                        </td>
-                        <td>
-                          {order.status === "Pending" && (
-                            <button
-                              className="bg-green-500 text-white px-3 py-1 rounded"
-                              onClick={() => {
-                                setSelectedOrder(order);
-                                setAssignModal(true);
-                              }}
-                            >
-                              Assign Gardener
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Assign Gardener Modal */}
-              {assignModal && selectedOrder && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <div className="bg-white rounded-lg max-w-md w-full p-8">
-                    <h3 className="text-xl font-bold mb-4">
-                      Assign Gardener to Order
-                    </h3>
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Select Gardener
-                      </label>
-                      <select
-                        className="w-full p-2 border rounded-md"
-                        value={selectedGardener}
-                        onChange={(e) => setSelectedGardener(e.target.value)}
-                      >
-                        <option value="">Select Gardener</option>
-                        {gardeners.map((gardener) => (
-                          <option key={gardener.id} value={gardener.id}>
-                            {gardener.username} ({gardener.email})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex justify-end space-x-3">
-                      <button
-                        onClick={() => setAssignModal(false)}
-                        className="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-50"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleAssignGardener}
-                        className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                        disabled={!selectedGardener}
-                      >
-                        Assign
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Plant Services */}
-          {activeTab === "plantServices" && (
-            <div className="p-4 bg-white rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold mb-6">Plant Services</h2>
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Service ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Customer ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Plant Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Quantity
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Location
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Gardener
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Assign
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {plantServices.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan="8"
-                          className="text-center py-4 text-gray-500"
-                        >
-                          No Plant Services found.
-                        </td>
-                      </tr>
-                    ) : (
-                      plantServices.map((service) => (
-                        <tr key={service.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {service.id}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {service.userId}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {service.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {service.quantity}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {service.locationName}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {service.status}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {service.gardenerId
-                              ? gardeners.find(
-                                  (g) => g.id === service.gardenerId
-                                )?.username || "Assigned"
-                              : "Not Assigned"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {service.status === "Pending" && (
-                              <button
-                                className="bg-green-500 text-white px-3 py-1 rounded"
-                                onClick={() => {
-                                  setSelectedService(service);
-                                  setAssignModal(true);
-                                }}
-                              >
-                                Assign Gardener
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Assign Gardener Modal */}
-              {assignModal && selectedService && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <div className="bg-white rounded-lg max-w-md w-full p-8">
-                    <h3 className="text-xl font-bold mb-4">
-                      Assign Gardener to Service
-                    </h3>
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Select Gardener
-                      </label>
-                      <select
-                        className="w-full p-2 border rounded-md"
-                        value={selectedGardener}
-                        onChange={(e) => setSelectedGardener(e.target.value)}
-                      >
-                        <option value="">Select Gardener</option>
-                        {gardeners
-                          .filter((gardener) => gardener.role === "Gardener") // Only include users with role "gardener"
-                          .map((gardener) => (
-                            <option key={gardener.id} value={gardener.id}>
-                              {gardener.username} ({gardener.email})
-                            </option>
+                {tab === 0 && (
+                  <>
+                    <Stack direction="row" justifyContent="flex-end" sx={{ p: 2 }}>
+                      <Button variant="contained" startIcon={<Plus size={18} />} onClick={openAdd}>Add plant</Button>
+                    </Stack>
+                    <TableContainer>
+                      <Table>
+                        <TableHead><TableRow>
+                          <TableCell>Plant</TableCell><TableCell>Category</TableCell>
+                          <TableCell align="right">Price</TableCell><TableCell align="right">Stock</TableCell>
+                          <TableCell>Status</TableCell><TableCell align="right">Actions</TableCell>
+                        </TableRow></TableHead>
+                        <TableBody>
+                          {plants.filter((p) => !q || `${p.name} ${p.category || ""}`.toLowerCase().includes(q.toLowerCase())).map((p) => (
+                            <TableRow key={p.id} hover>
+                              <TableCell><Stack direction="row" spacing={1.5} alignItems="center">
+                                <Box component="img" src={`${uploads}${p.image}`} alt="" sx={{ width: 40, height: 40, objectFit: "contain", bgcolor: "#f4f7f4", borderRadius: 1 }} />
+                                <Typography variant="body2" sx={{ fontWeight: 600 }}>{p.name}</Typography></Stack></TableCell>
+                              <TableCell>{p.category || "—"}</TableCell>
+                              <TableCell align="right">Rs {Number(p.price).toLocaleString()}</TableCell>
+                              <TableCell align="right">{p.quantity}</TableCell>
+                              <TableCell><Chip size="small" label={p.quantity <= 0 ? "Out" : p.quantity < 5 ? "Low" : "In stock"} color={p.quantity <= 0 ? "error" : p.quantity < 5 ? "warning" : "success"} variant="outlined" /></TableCell>
+                              <TableCell align="right">
+                                <Tooltip title="Edit"><IconButton size="small" onClick={() => openEdit(p)}><Pencil size={16} /></IconButton></Tooltip>
+                                <Tooltip title="Delete"><IconButton size="small" color="error" onClick={() => deletePlant(p.id)}><Trash2 size={16} /></IconButton></Tooltip>
+                              </TableCell>
+                            </TableRow>
                           ))}
-                      </select>
-                    </div>
-                    <div className="flex justify-end space-x-3">
-                      <button
-                        onClick={() => setAssignModal(false)}
-                        className="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-50"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleAssignGardener}
-                        className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                        disabled={!selectedGardener}
-                      >
-                        Assign
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </>
+                )}
 
-          {/* Payments */}
-          {activeTab === "payments" && (
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Payments</h2>
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Payment ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Customer
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {payments.map((payment) => (
-                      <tr key={payment.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {payment.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {payment.paymentMethodId}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          Rs{payment.amount}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {new Date(payment.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              payment.status === "Pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {payment.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-xl w-full p-8">
-            {modalType === "add" && (
-              <>
-                <h3 className="text-2xl font-bold mb-4">Add New Plant</h3>
-                <form onSubmit={handleSubmit}>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-md"
-                        required
-                      />
-                    </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Price
-                      </label>
-                      <input
-                        type="number"
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-md"
-                        required
-                      />
-                    </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Quantity
-                      </label>
-                      <input
-                        type="number"
-                        name="quantity"
-                        value={formData.quantity}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-md"
-                        required
-                      />
-                    </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Category
-                      </label>
-                      <select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-md"
-                        required
-                      >
-                        <option value="">Select category</option>
-                        {categories.map((category) => (
-                          <option key={category} value={category}>
-                            {category}
-                          </option>
+                {tab === 1 && (
+                  <TableContainer>
+                    <Table>
+                      <TableHead><TableRow><TableCell>Name</TableCell><TableCell>Email</TableCell><TableCell>City</TableCell><TableCell>Role</TableCell></TableRow></TableHead>
+                      <TableBody>
+                        {users.filter((u) => !q || `${u.username} ${u.email}`.toLowerCase().includes(q.toLowerCase())).map((u) => (
+                          <TableRow key={u.id} hover>
+                            <TableCell sx={{ fontWeight: 600 }}>{u.username}</TableCell><TableCell>{u.email}</TableCell><TableCell>{u.city || "—"}</TableCell>
+                            <TableCell><Chip size="small" label={u.role} color={u.role === "Admin" ? "secondary" : u.role === "Gardener" ? "success" : "default"} variant="outlined" /></TableCell>
+                          </TableRow>
                         ))}
-                      </select>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Description
-                      </label>
-                      <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-md"
-                        rows="3"
-                        required
-                      ></textarea>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Image
-                      </label>
-                      <input
-                        type="file"
-                        name="image"
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-md"
-                        accept="image/*"
-                      />
-                      {previewImage && (
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="mt-2 h-32 w-32 object-cover rounded-md"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-6 flex justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowModal(false)}
-                      className="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                    >
-                      Add Plant
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
 
-            {modalType === "delete" && (
-              <>
-                <h3 className="text-2xl font-bold mb-4">Delete Plant</h3>
-                <p className="mb-6">
-                  Are you sure you want to delete {selectedItem?.name}?
-                </p>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => handleDelete(selectedItem?.id)}
-                    className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+                {tab === 2 && (
+                  <TableContainer>
+                    <Table>
+                      <TableHead><TableRow>
+                        <TableCell>Service</TableCell><TableCell>Location</TableCell><TableCell align="right">Total</TableCell>
+                        <TableCell>Status</TableCell><TableCell>Gardener</TableCell><TableCell>Assign</TableCell>
+                      </TableRow></TableHead>
+                      <TableBody>
+                        {services.length === 0 ? (
+                          <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>No service jobs yet.</TableCell></TableRow>
+                        ) : services.map((s) => (
+                          <TableRow key={s.id} hover>
+                            <TableCell sx={{ fontWeight: 600 }}>{s.name}{s.quantity ? ` ×${s.quantity}` : ""}</TableCell>
+                            <TableCell>{s.locationName || "—"}</TableCell>
+                            <TableCell align="right">Rs {Number(s.total).toLocaleString()}</TableCell>
+                            <TableCell><Chip size="small" label={s.status} color={statusColor[s.status] || "default"} variant="outlined" /></TableCell>
+                            <TableCell>{s.gardenerId ? gardenerName(s.gardenerId) : "Unassigned"}</TableCell>
+                            <TableCell>
+                              {s.status !== "Completed" && (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <Select size="small" displayEmpty value={assignSel[s.id] || ""} onChange={(e) => setAssignSel((a) => ({ ...a, [s.id]: e.target.value }))} sx={{ minWidth: 130 }}>
+                                    <MenuItem value="" disabled>Gardener…</MenuItem>
+                                    {gardeners.map((g) => <MenuItem key={g.id} value={g.id}>{g.username}</MenuItem>)}
+                                  </Select>
+                                  <Button size="small" variant="contained" onClick={() => assign(s.id)} disabled={!assignSel[s.id] || assignSel[s.id] === s.gardenerId}>{s.gardenerId && (!assignSel[s.id] || assignSel[s.id] === s.gardenerId) ? "Assigned ✓" : "Assign"}</Button>
+                                </Stack>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+
+                {tab === 3 && (
+                  <TableContainer>
+                    <Table>
+                      <TableHead><TableRow>
+                        <TableCell>Service</TableCell><TableCell>Address</TableCell><TableCell align="right">Total</TableCell>
+                        <TableCell>Status</TableCell><TableCell>Gardener</TableCell><TableCell>Assign</TableCell>
+                      </TableRow></TableHead>
+                      <TableBody>
+                        {homeServices.length === 0 ? (
+                          <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>No home-service requests yet.</TableCell></TableRow>
+                        ) : homeServices.map((s) => (
+                          <TableRow key={s.id} hover>
+                            <TableCell sx={{ fontWeight: 600 }}><Stack direction="row" spacing={1} alignItems="center"><Home size={15} />{s.name}{s.quantity ? ` ×${s.quantity}` : ""}</Stack></TableCell>
+                            <TableCell><Typography variant="body2">{s.location}</Typography><Typography variant="caption" color="text.secondary">{s.address}</Typography></TableCell>
+                            <TableCell align="right">Rs {Number(s.total).toLocaleString()}</TableCell>
+                            <TableCell><Chip size="small" label={s.status} color={statusColor[s.status] || "default"} variant="outlined" /></TableCell>
+                            <TableCell>{s.gardenerId ? gardenerName(s.gardenerId) : "Unassigned"}</TableCell>
+                            <TableCell>
+                              {s.status !== "Completed" && (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <Select size="small" displayEmpty value={assignHsSel[s.id] || ""} onChange={(e) => setAssignHsSel((a) => ({ ...a, [s.id]: e.target.value }))} sx={{ minWidth: 130 }}>
+                                    <MenuItem value="" disabled>Gardener…</MenuItem>
+                                    {gardeners.map((g) => <MenuItem key={g.id} value={g.id}>{g.username}</MenuItem>)}
+                                  </Select>
+                                  <Button size="small" variant="contained" onClick={() => assignHs(s.id)} disabled={!assignHsSel[s.id] || assignHsSel[s.id] === s.gardenerId}>{s.gardenerId && (!assignHsSel[s.id] || assignHsSel[s.id] === s.gardenerId) ? "Assigned ✓" : "Assign"}</Button>
+                                </Stack>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+
+                {tab === 4 && (
+                  <TableContainer>
+                    <Table>
+                      <TableHead><TableRow>
+                        <TableCell>Payment</TableCell><TableCell>Method</TableCell><TableCell>Reference</TableCell>
+                        <TableCell align="right">Amount</TableCell><TableCell>Status</TableCell><TableCell align="right">Action</TableCell>
+                      </TableRow></TableHead>
+                      <TableBody>
+                        {payments.length === 0 ? (
+                          <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>No payments yet.</TableCell></TableRow>
+                        ) : payments.map((p) => (
+                          <TableRow key={p.id} hover>
+                            <TableCell><Stack direction="row" spacing={1} alignItems="center"><CreditCard size={15} /><Typography variant="body2" sx={{ fontWeight: 600 }}>{new Date(p.createdAt).toLocaleDateString()}</Typography></Stack></TableCell>
+                            <TableCell sx={{ textTransform: "capitalize" }}>{p.method || "—"}</TableCell>
+                            <TableCell>{p.reference || "—"}</TableCell>
+                            <TableCell align="right">Rs {Number(p.amount).toLocaleString()}</TableCell>
+                            <TableCell><Chip size="small" label={p.status} color={p.status === "Approved" ? "success" : p.status === "Rejected" ? "error" : "warning"} variant="outlined" /></TableCell>
+                            <TableCell align="right">
+                              {p.status === "Pending" && (
+                                <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                  <Button size="small" variant="contained" color="success" startIcon={<Check size={15} />} onClick={() => decidePayment(p.id, "approve")}>Approve</Button>
+                                  <Button size="small" variant="outlined" color="error" startIcon={<X size={15} />} onClick={() => decidePayment(p.id, "reject")}>Reject</Button>
+                                </Stack>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+
+                {tab === 5 && (
+                  <TableContainer>
+                    <Table>
+                      <TableHead><TableRow>
+                        <TableCell>From</TableCell><TableCell>Email</TableCell><TableCell>Message</TableCell>
+                        <TableCell>Status</TableCell><TableCell align="right">Action</TableCell>
+                      </TableRow></TableHead>
+                      <TableBody>
+                        {contacts.length === 0 ? (
+                          <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>No messages yet.</TableCell></TableRow>
+                        ) : contacts.map((c) => (
+                          <TableRow key={c.id} hover>
+                            <TableCell><Typography variant="body2" sx={{ fontWeight: 600 }}>{c.name}</Typography><Typography variant="caption" color="text.secondary">{new Date(c.createdAt).toLocaleDateString()}</Typography></TableCell>
+                            <TableCell>{c.email}</TableCell>
+                            <TableCell sx={{ maxWidth: 320 }}><Typography variant="body2">{c.message}</Typography></TableCell>
+                            <TableCell><Chip size="small" label={c.handled ? "Handled" : "New"} color={c.handled ? "success" : "warning"} variant="outlined" /></TableCell>
+                            <TableCell align="right">
+                              <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                <Button size="small" variant="contained" startIcon={<Mail size={15} />} href={`mailto:${c.email}?subject=Re: Go Green enquiry`}>Reply</Button>
+                                {!c.handled && <Button size="small" variant="outlined" onClick={() => markContact(c.id)}>Done</Button>}
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+
+                {tab === 6 && (
+                  <Box sx={{ p: 2 }}>
+                    {gardenerList.length === 0 ? (
+                      <Typography align="center" sx={{ py: 4, color: "text.secondary" }}>No gardeners registered yet.</Typography>
+                    ) : (
+                      <Grid container spacing={2}>
+                        {gardenerList.map((g) => (
+                          <Grid item xs={12} md={6} key={g.id}>
+                            <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                              <CardContent>
+                                <Stack direction="row" spacing={2}>
+                                  <Avatar src={g.image || undefined} sx={{ width: 56, height: 56, bgcolor: "#2e7d32" }}>{(g.username || "G")[0]}</Avatar>
+                                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{g.username}</Typography>
+                                      <Chip size="small" label={g.approved ? "Approved" : "Pending"} color={g.approved ? "success" : "warning"} />
+                                    </Stack>
+                                    <Typography variant="caption" color="text.secondary">{g.email} · {g.city || "—"}</Typography>
+                                    <Typography variant="body2" sx={{ mt: 0.5 }}>CNIC: {g.nic || "—"} · Phone: {g.mobile || "—"}</Typography>
+                                    <Typography variant="body2">Bike: {[g.bikeName, g.bikeNumber].filter(Boolean).join(" · ") || g.bikeDetails || "—"}</Typography>
+                                    <Typography variant="body2">Experience: {g.experience || "—"}</Typography>
+                                    <Typography variant="body2">Services: {g.services || "—"}</Typography>
+                                  </Box>
+                                </Stack>
+                                <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 1.5 }}>
+                                  {g.approved
+                                    ? <Button size="small" variant="outlined" color="warning" onClick={() => setApproval(g.id, false)}>Unapprove</Button>
+                                    : <Button size="small" variant="contained" color="success" onClick={() => setApproval(g.id, true)}>Approve</Button>}
+                                </Stack>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    )}
+                  </Box>
+                )}
+              </Paper>
+            </>
+          )}
+        </Container>
+
+        {/* Plant add/edit dialog */}
+        <Dialog open={plantDialog.open} onClose={() => setPlantDialog({ open: false, mode: "add", id: null })} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ fontWeight: 800 }}>{plantDialog.mode === "add" ? "Add plant" : "Edit plant"}</DialogTitle>
+          <DialogContent>
+            <Stack spacing={2.5} sx={{ mt: 1 }}>
+              <TextField label="Name" fullWidth value={plantForm.name} onChange={(e) => setPf("name", e.target.value)} />
+              <Stack direction="row" spacing={2}>
+                <TextField label="Price (Rs)" type="number" fullWidth value={plantForm.price} onChange={(e) => setPf("price", e.target.value)} />
+                <TextField label="Quantity" type="number" fullWidth value={plantForm.quantity} onChange={(e) => setPf("quantity", e.target.value)} />
+              </Stack>
+              <TextField select label="Category" fullWidth value={plantForm.category} onChange={(e) => setPf("category", e.target.value)}>
+                {CATEGORIES.map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+              </TextField>
+              <TextField label="Description" fullWidth multiline rows={3} value={plantForm.description} onChange={(e) => setPf("description", e.target.value)} />
+              <Button component="label" variant="outlined" startIcon={<Upload size={18} />} sx={{ borderStyle: "dashed", py: 1.3 }}>
+                {plantImage ? plantImage.name : plantDialog.mode === "edit" ? "Replace image (optional)" : "Upload image"}
+                <input type="file" hidden accept="image/*" onChange={(e) => setPlantImage(e.target.files[0])} />
+              </Button>
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => setPlantDialog({ open: false, mode: "add", id: null })}>Cancel</Button>
+            <Button variant="contained" onClick={savePlant} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </ThemeProvider>
   );
 };
 

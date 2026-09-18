@@ -1,270 +1,141 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../config";
-import boxImage1 from "../Modules/Icons/donate-icon.png";
-import boxImage2 from "../Modules/Icons/join-hands.png";
-import boxImage3 from "../Modules/Icons/plant-trees.png";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-
-import PaymentForm from "./PaymentForm";
-import "./Donation.css";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { decodeJwt } from "jose";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ThemeProvider } from "@mui/material/styles";
+import {
+  Box, Container, Grid, Typography, Button, Card, CardContent, Slider, Stack, Avatar, Divider,
+} from "@mui/material";
+import { Leaf, HandHeart, Users, Sprout, TreePine } from "lucide-react";
+import theme from "../theme";
 
-const stripePromise = loadStripe(
-  "pk_test_51OJXz3I01IywrPiuBqUt4xXDzitUHLkLjTbFNfLdUP2JHOnl3rUmj0DmDPtklzZBItOklPKI0jx5lO77f1Cb4eEa00tXSGBm82"
-);
+const MAX_TREES = 100;
+const COST_PER_TREE = 100;
+
 const Donation = () => {
-  const [trees, setTrees] = useState(0);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [error, setError] = useState();
   const navigate = useNavigate();
-  const [userInfo, setUserInfo] = useState({
-    id: "",
-  });
-  const maxTrees = 100;
-  const costPerTree = 100;
-
-  const handleTreeChange = (event) => {
-    setTrees(Number(event.target.value));
-  };
-
-  const handleDonateClick = () => {
-    setShowPaymentForm(true);
-  };
-
-  const handleClosePaymentForm = () => {
-    setShowPaymentForm(false);
-  };
-
-  const totalPrice = trees * costPerTree;
-
-  const handleOrderPlacement = async () => {
-    // Prepare order data payload
-    const orderData = {
-      userId: userInfo.id, // User ID
-      quantity: trees,
-      total: totalPrice,
-
-      // Complete address
-    };
-
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/donation`,
-        orderData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Auth token
-          },
-        }
-      );
-
-      if (response.status === 201) {
-        console.log("Order saved successfully:", response.data);
-
-        setShowPaymentForm(false); // Proceed to payment after saving
-      } else {
-        console.error("Failed to save order:", response.data);
-      }
-    } catch (err) {
-      console.error("Error saving order:", err);
-      // Optionally show an error message to the user
-      toast.error("Failed to place order. Please try again.");
-    }
-  };
-
-  const handlePaymentSuccess = () => {
-    // Call handleOrderPlacement after successful payment
-    handleOrderPlacement();
-    setTrees(0);
-  };
+  const [trees, setTrees] = useState(10);
+  const [userId, setUserId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const storedTokens = {
-      authToken: localStorage.getItem("authToken"),
-      token: localStorage.getItem("token"),
-      userToken: localStorage.getItem("userToken"),
-    };
-
-    const authToken =
-      storedTokens.authToken || storedTokens.token || storedTokens.userToken;
-
-    if (!authToken) {
-      console.error("No authentication token found in any storage key");
-      navigate("/login");
-      return;
-    }
-
-    const fetchUserDetails = async () => {
+    const token = localStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("userToken");
+    if (!token) return;
+    (async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/user`, {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        });
-
-        console.log("Full User Details Response:", response.data);
-
-        if (response.data && response.data.data) {
-          // Decode the authToken to get the user ID
-          const decodedToken = decodeJwt(authToken);
-          console.log("Decoded Token:", decodedToken);
-
-          // `sub` represents the user ID in the token
-          const userId = decodedToken.sub;
-
-          // Find the user matching the decoded user ID
-          const userDetails = response.data.data.find(
-            (user) => user.id === userId
-          );
-
-          if (userDetails) {
-            setUserInfo(userDetails);
-          } else {
-            console.warn("No matching user found for the given token.");
-            setError("No user details found.");
-          }
+        const res = await axios.get(`${API_BASE_URL}/user`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.data?.data) {
+          const uid = decodeJwt(token).sub;
+          const me = res.data.data.find((u) => u.id === uid);
+          if (me) setUserId(me.id);
         }
-      } catch (err) {
-        console.error("Detailed Error:", {
-          message: err.message,
-          response: err.response?.data,
-          status: err.response?.status,
-        });
+      } catch { /* guest */ }
+    })();
+  }, []);
 
-        if (err.response?.status === 401) {
-          navigate("/login");
-        } else {
-          setError("Failed to fetch user details");
-        }
+  const total = trees * COST_PER_TREE;
+
+  const donate = async () => {
+    if (trees <= 0) { toast.error("Please choose at least one tree."); return; }
+    if (!userId) { toast.error("Please log in to donate."); navigate("/login"); return; }
+    setSubmitting(true);
+    try {
+      const res = await axios.post(`${API_BASE_URL}/donation`,
+        { userId, quantity: trees, total },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } });
+      if (res.status === 201) {
+        toast.success(`Thank you! You've donated ${trees} tree${trees > 1 ? "s" : ""}. 🌱`);
+        setTrees(10);
       }
-    };
+    } catch {
+      toast.error("Failed to process donation. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-    fetchUserDetails();
-  }, [navigate]);
+  const cards = [
+    { icon: <HandHeart size={26} />, title: "Donate now", text: "Fund trees that get planted on public land across Pakistan." },
+    { icon: <Users size={26} />, title: "Join us", text: "Be part of a growing community restoring green cover." },
+    { icon: <Sprout size={26} />, title: "Get involved", text: "Track the impact of every tree you help plant." },
+  ];
 
   return (
-    <div>
-      <div className="donation-container relative">
-        <div className="text-center text-white relative">
-          <h1
-            className="Donate-Now text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tight -mt-36"
-            style={{ lineHeight: "1.2" }}
-          >
-            <span>Donate</span>
-            <span className="ml-4">Now</span>
-          </h1>
-          <p className="impact-env mt-4 text-lg sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-2xl">
-            Help us plant trees and make a positive impact on the environment!
-          </p>
-        </div>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ pt: "64px", bgcolor: "#fff" }}>
+        {/* Hero */}
+        <Box sx={{ background: "linear-gradient(160deg, #1b5e20, #2e7d32)", color: "#fff", py: { xs: 6, md: 9 } }}>
+          <Container maxWidth="md" sx={{ textAlign: "center" }}>
+            <Stack direction="row" spacing={1} justifyContent="center" alignItems="center" sx={{ mb: 2, opacity: 0.9 }}>
+              <Leaf size={20} /><Typography variant="body2" sx={{ fontWeight: 600, letterSpacing: 1 }}>DONATE</Typography>
+            </Stack>
+            <Typography variant="h2" sx={{ fontWeight: 800, fontSize: { xs: "2rem", md: "3rem" }, mb: 1.5 }}>Donate now, plant a tree</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.92 }}>
+              Help us plant trees and make a positive impact on the environment.
+            </Typography>
+          </Container>
+        </Box>
 
-        <div className="absolute bottom-8 w-full flex justify-center space-x-4 p-4">
-          <div className="first-box box flex items-center justify-start w-full sm:w-80 md:w-96 lg:w-1/4 h-32 sm:h-40 md:h-48 lg:h-52 p-4 overflow-hidden">
-            <img src={boxImage1} alt="First Box" className="box-img ml-4" />
-            <span
-              className="box-text ml-4"
-              style={{ fontFamily: '"Dancing Script", cursive' }}
-            >
-              Donate Now
-            </span>
-          </div>
+        {/* Info cards */}
+        <Container maxWidth="lg" sx={{ mt: { xs: -4, md: -5 }, position: "relative", zIndex: 2 }}>
+          <Grid container spacing={3}>
+            {cards.map((c, i) => (
+              <Grid item xs={12} md={4} key={i}>
+                <Card elevation={4} sx={{ borderRadius: 3, height: "100%" }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Avatar sx={{ bgcolor: "#eaf3ea", color: "primary.main", width: 52, height: 52, mb: 2 }}>{c.icon}</Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{c.title}</Typography>
+                    <Typography variant="body2" color="text.secondary">{c.text}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
 
-          <div className="second-box box flex items-center justify-start w-full sm:w-80 md:w-96 lg:w-1/4 h-32 sm:h-40 md:h-48 lg:h-52 p-4 overflow-hidden">
-            <img src={boxImage2} alt="Second Box" className="box-img ml-4" />
-            <span
-              className="box-text ml-4"
-              style={{ fontFamily: '"Dancing Script", cursive' }}
-            >
-              Join us now
-            </span>
-          </div>
+        {/* Donate widget */}
+        <Container maxWidth="sm" sx={{ py: { xs: 6, md: 9 } }}>
+          <Card variant="outlined" sx={{ borderRadius: 4 }}>
+            <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
+                <Avatar sx={{ bgcolor: "primary.main", width: 48, height: 48 }}><TreePine size={24} /></Avatar>
+                <Typography variant="h5" sx={{ fontWeight: 800 }}>Donate &amp; plant a tree</Typography>
+              </Stack>
 
-          <div className="third-box box flex items-center justify-start w-full sm:w-80 md:w-96 lg:w-1/4 h-32 sm:h-40 md:h-48 lg:h-52 p-4 overflow-hidden">
-            <img src={boxImage3} alt="Third Box" className="box-img ml-4" />
-            <span
-              className="box-text ml-4"
-              style={{ fontFamily: '"Dancing Script", cursive' }}
-            >
-              Get involved
-            </span>
-          </div>
-        </div>
-      </div>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>Number of trees</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: "primary.main" }}>{trees}</Typography>
+              </Stack>
+              <Slider value={trees} onChange={(_, v) => setTrees(v)} min={0} max={MAX_TREES} step={1} valueLabelDisplay="auto" />
+              <Stack direction="row" justifyContent="space-between">
+                <Typography variant="caption" color="text.secondary">0</Typography>
+                <Typography variant="caption" color="text.secondary">{MAX_TREES}</Typography>
+              </Stack>
 
-      <div className="new-container w-full p-8 flex flex-col items-center justify-center mt-12">
-        <h2
-          className="donate-plant text-center text-3xl sm:text-4xl md:text-5xl tracking-tight"
-          style={{ wordSpacing: "0.5rem" }}
-        >
-          Donate & Plant a Tree
-        </h2>
+              <Divider sx={{ my: 3 }} />
 
-        <div className="w-full max-w-lg mt-8">
-          <div className="flex items-center justify-between">
-            <label className="no-oftrees mt-14 block text-2xl">
-              No. of trees to plant
-            </label>
-            <span className="mt-14 text-2xl font-medium">{trees}</span>
-          </div>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Your donation</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 800 }}>Rs {total.toLocaleString()}</Typography>
+                </Box>
+                <Typography variant="caption" color="text.secondary">Rs {COST_PER_TREE} / tree</Typography>
+              </Stack>
 
-          <input
-            type="range"
-            min="0"
-            max={maxTrees}
-            value={trees}
-            onChange={handleTreeChange}
-            className="slider mt-14 w-full"
-          />
-
-          <div className="flex justify-between text-sm mt-2">
-            <span>0</span>
-            <span>{maxTrees}</span>
-          </div>
-        </div>
-
-        <div className="mt-16 w-full max-w-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col items-start">
-              <p className="donation-text block">Your Donation</p>
-              <p className="cost-text text-3xl">Rs {totalPrice}.00</p>
-            </div>
-
-            <div className="donate-button-container">
-              <button
-                className="donate-button text-white -600 py-2 px-6 hover:bg-black transition"
-                onClick={handleDonateClick}
-              >
-                Donate
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {showPaymentForm && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-            <button
-              className="absolute top-3 right-3 text-gray-500 hover:text-black"
-              onClick={handleClosePaymentForm}
-            >
-              ✕
-            </button>
-            <Elements stripe={stripePromise}>
-              <PaymentForm
-                onClose={handleClosePaymentForm}
-                onPaymentSuccess={handlePaymentSuccess}
-                totalPrice={totalPrice}
-              />
-            </Elements>
-          </div>
-        </div>
-      )}
-    </div>
+              <Button fullWidth variant="contained" size="large" onClick={donate} disabled={submitting} sx={{ py: 1.4 }}>
+                {submitting ? "Processing…" : "Donate"}
+              </Button>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 2, textAlign: "center" }}>
+                Online payment is coming soon — your donation is recorded for now.
+              </Typography>
+            </CardContent>
+          </Card>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 };
 

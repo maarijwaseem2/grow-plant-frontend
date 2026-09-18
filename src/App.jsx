@@ -23,6 +23,7 @@ import PlantService from "./components/Plant-Services";
 import ProductDetails from "./components/DetailsProduct";
 import { toast, ToastContainer } from "react-toastify";
 import { CartProvider } from "./context/CartContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import "react-toastify/dist/ReactToastify.css";
 import Subscription from "./components/Subscription";
 import HomeService from "./components/HomeService";
@@ -40,6 +41,10 @@ import AdminDashboard from "./Admin/components/AdminDashboard";
 import GardenerDashboard from "./Gardener/components/GardenerDashboard";
 import GardenerRoute from "./components/GardenerRoute";
 import ComplaintForm from "./components/Complain";
+import ChatWidget from "./components/ChatWidget";
+import NotificationsPage from "./components/NotificationsPage";
+import MessagesPage from "./components/MessagesPage";
+import MyServices from "./components/MyServices";
 import { messaging, getToken, onMessage } from './Firebase';
 
 // (Removed a stray <Route> element that sat here at module top level. It was
@@ -306,10 +311,15 @@ function App() {
   }, [currentPage]);
 
   return (
+    <LanguageProvider>
     <CartProvider products={products}>
       <Router>
         <ToastContainer />
+        <ChatWidget />
         <Routes>
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/my-services" element={<MyServices />} />
           <Route
             path="/"
             element={
@@ -546,6 +556,17 @@ function App() {
             }
           />
           <Route
+            path="/complain"
+            element={
+              <>
+                <CustomScrollbar />
+                <Navbar />
+                <ComplaintForm />
+                <Footer />
+              </>
+            }
+          />
+          <Route
             path="/about-us"
             element={
               <>
@@ -569,6 +590,7 @@ function App() {
         </Routes>
       </Router>
     </CartProvider>
+    </LanguageProvider>
   );
 }
 
