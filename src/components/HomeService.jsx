@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "../config";
+import { API_BASE_URL, imgUrl } from "../config";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { decodeJwt } from "jose";
@@ -151,7 +151,7 @@ const HomeService = () => {
                         sx={{ borderRadius: 3, cursor: out ? "default" : "pointer", borderColor: isSel ? "primary.main" : undefined, borderWidth: isSel ? 2 : 1 }}>
                         <Stack direction="row" spacing={2} sx={{ p: 2 }} alignItems="center">
                           <Box sx={{ width: 72, height: 72, bgcolor: "#f4f7f4", borderRadius: 2, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Box component="img" src={`${uploads}${p.image}`} alt={p.name} sx={{ maxWidth: "80%", maxHeight: "80%", objectFit: "contain" }} />
+                            <Box component="img" src={imgUrl(p.image)} alt={p.name} sx={{ maxWidth: "80%", maxHeight: "80%", objectFit: "contain" }} />
                           </Box>
                           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 700 }} noWrap>{p.name}</Typography>

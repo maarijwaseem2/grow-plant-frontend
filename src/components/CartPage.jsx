@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { API_BASE_URL } from "../config";
+import { API_BASE_URL, imgUrl } from "../config";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import axios from "axios";
@@ -182,7 +182,7 @@ const CartPage = () => {
                       <Card key={`${item.productID}-${item.size}-${item.color}`} variant="outlined" sx={{ borderRadius: 3 }}>
                         <Stack direction="row" spacing={2} sx={{ p: 2 }} alignItems="center">
                           <Box sx={{ width: 84, height: 84, bgcolor: "#f4f7f4", borderRadius: 2, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Box component="img" src={`${uploads}${item.image}`} alt={item.name} sx={{ maxWidth: "80%", maxHeight: "80%", objectFit: "contain" }} />
+                            <Box component="img" src={imgUrl(item.image)} alt={item.name} sx={{ maxWidth: "80%", maxHeight: "80%", objectFit: "contain" }} />
                           </Box>
                           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 700 }} noWrap>{item.name}</Typography>

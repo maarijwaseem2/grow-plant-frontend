@@ -1,3 +1,4 @@
+import { imgUrl } from "../config";
 import React from "react";
 import ProductCard from "./ProductCard";
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useMemo } from "react";
-import { API_BASE_URL } from "../../../config";
+import { API_BASE_URL, imgUrl } from "../../../config";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -131,7 +131,7 @@ const ShopDetails = () => {
                             sx={{ borderRadius: 3, cursor: "pointer", height: "100%", display: "flex", flexDirection: "column",
                               transition: "0.25s", "&:hover": { boxShadow: 6, transform: "translateY(-4px)", borderColor: "primary.light" } }}>
                             <Box sx={{ bgcolor: "#f4f7f4", p: 2, position: "relative" }}>
-                              <CardMedia component="img" image={`${uploads}${plant.image}`} alt={plant.name}
+                              <CardMedia component="img" image={imgUrl(plant.image)} alt={plant.name}
                                 sx={{ height: 170, objectFit: "contain" }} />
                               {outOfStock && (
                                 <Chip label="Out of stock" size="small" color="error"

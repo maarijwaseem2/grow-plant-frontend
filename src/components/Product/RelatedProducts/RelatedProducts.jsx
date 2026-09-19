@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { API_BASE_URL } from "../../../config";
+import { API_BASE_URL, imgUrl } from "../../../config";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
@@ -51,7 +51,7 @@ const RelatedProducts = ({ selectedProductID }) => {
                   sx={{ borderRadius: 3, cursor: "pointer", height: "100%", transition: "0.25s",
                     "&:hover": { boxShadow: 6, transform: "translateY(-4px)", borderColor: "primary.light" } }}>
                   <Box sx={{ bgcolor: "#fff", p: 2 }}>
-                    <CardMedia component="img" image={`${uploads}${p.image}`} alt={p.name} sx={{ height: 140, objectFit: "contain" }} />
+                    <CardMedia component="img" image={imgUrl(p.image)} alt={p.name} sx={{ height: 140, objectFit: "contain" }} />
                   </Box>
                   <CardContent>
                     {p.category && <Chip label={p.category} size="small" variant="outlined" sx={{ mb: 1 }} />}

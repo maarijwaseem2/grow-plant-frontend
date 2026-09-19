@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useContext } from "react";
 import { CartContext } from "../context/CartContext";
 import Seo from "./Seo";
+import { imgUrl } from "../config";
 
 const ProductDetail = () => {
   const { handleAddToCart, cartQuantity } = useContext(CartContext);
@@ -106,7 +107,7 @@ const ProductDetail = () => {
   };
 
   const imageSrc = product.data.image
-    ? `${baseUrl}${product.data.image}`
+    ? imgUrl(product.data.image)
     : null;
   return (
     <div className="container mt-5 px-4 md:px-8 lg:px-16">
@@ -211,7 +212,7 @@ const ProductDetail = () => {
                 className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-xl"
               >
                 <img
-                  src={`${baseUrl}${similarProduct.image}`}
+                  src={imgUrl(similarProduct.image)}
                   alt={similarProduct.name}
                   className="w-full h-56 object-cover"
                 />

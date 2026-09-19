@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "../../../config";
+import { API_BASE_URL, imgUrl } from "../../../config";
 import axios from "axios";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useCart } from "../../../context/CartContext";
@@ -94,7 +94,7 @@ const Product = ({ selectedProductID }) => {
             {/* Image */}
             <Grid item xs={12} md={6}>
               <Paper variant="outlined" sx={{ borderRadius: 4, p: { xs: 3, md: 5 }, bgcolor: "#f4f7f4", display: "flex", justifyContent: "center", alignItems: "center", minHeight: 360 }}>
-                <Box component="img" src={`${uploads}${product.image}`} alt={product.name}
+                <Box component="img" src={imgUrl(product.image)} alt={product.name}
                   sx={{ maxWidth: "100%", maxHeight: 400, objectFit: "contain" }} />
               </Paper>
             </Grid>

@@ -1058,3 +1058,25 @@ hard-refresh the browser (Ctrl+Shift+R).
 - Favicon changed to a Go Green leaf (public/favicon.svg) instead of the default Vite logo.
 - index.html now has a proper SEO title ("Go Green — Grow a greener Pakistan"), meta description,
   keywords, theme-color, and Open Graph + Twitter tags. (Per-page dynamic meta via Seo.jsx stays.)
+
+## SEO BUILD FIX (react-helmet-async removed)
+- react-helmet-async@3.0.0 failed to resolve under Vite (build error at the HelmetProvider
+  import). Replaced it entirely with a dependency-free Seo component that sets title + meta
+  tags via the DOM in a useEffect, and removed HelmetProvider from main.jsx + the package.json
+  dependency. Per-page dynamic SEO still works; the build is clean.
+
+## PRODUCTION BUG FIXES (Vercel 404 + product images)
+- Vercel SPA 404-on-refresh: added vercel.json with a catch-all rewrite to /index.html so
+  React Router paths (e.g. /home-services) resolve on refresh/direct access.
+- Product images were broken in production: the create endpoint hard-coded
+  "http://localhost:3000/uploads/<file>" (wrong host AND wrong port), and on Render the
+  /uploads disk is ephemeral (uploaded files vanish on restart). Fixed by storing product
+  images as base64 in the DB (like profile images) so they persist:
+  - Backend: buy-plant create/update now store a base64 image string from the body (file
+    upload still supported as a fallback); removed the localhost hard-code and the
+    "No file uploaded" requirement.
+  - Frontend: the admin product form resizes the image to a compact base64 JPEG and sends it
+    as JSON; a new imgUrl() helper renders base64/http/filename correctly, applied everywhere
+    a product image shows (shop, product page, admin, cart, related, recommender, home service).
+  - Verified: create plant with base64 -> 201, stored value is a data: URL (persists).
+- Full build + boot re-tested: backend EXIT 0 + boots clean, frontend EXIT 0.

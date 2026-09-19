@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../config";
+import { imgUrl } from "../../config";
+import { resizeImage } from "../../utils/image";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -96,13 +98,11 @@ const AdminDashboard = () => {
     if (!name || price === "" || quantity === "" || !category || !description) { toast.error("Please fill in all fields."); return; }
     if (plantDialog.mode === "add" && !plantImage) { toast.error("Please add an image."); return; }
     setSaving(true);
-    const fd = new FormData();
-    fd.append("name", name); fd.append("price", price); fd.append("quantity", quantity);
-    fd.append("description", description); fd.append("category", category);
-    if (plantImage) fd.append("image", plantImage);
+    const payload = { name, price, quantity, description, category };
+    if (plantImage) payload.image = plantImage; // base64 string (persists in DB)
     try {
-      if (plantDialog.mode === "add") { await axios.post(`${API_BASE_URL}/plants`, fd, authHeader); toast.success("Plant added."); }
-      else { await axios.patch(`${API_BASE_URL}/plants/${plantDialog.id}`, fd, authHeader); toast.success("Plant updated."); }
+      if (plantDialog.mode === "add") { await axios.post(`${API_BASE_URL}/plants`, payload, authHeader); toast.success("Plant added."); }
+      else { await axios.patch(`${API_BASE_URL}/plants/${plantDialog.id}`, payload, authHeader); toast.success("Plant updated."); }
       setPlantDialog({ open: false, mode: "add", id: null }); setPlantImage(null);
       await refreshPlants();
     } catch (e) {
@@ -214,7 +214,7 @@ const AdminDashboard = () => {
                           {plants.filter((p) => !q || `${p.name} ${p.category || ""}`.toLowerCase().includes(q.toLowerCase())).map((p) => (
                             <TableRow key={p.id} hover>
                               <TableCell><Stack direction="row" spacing={1.5} alignItems="center">
-                                <Box component="img" src={`${uploads}${p.image}`} alt="" sx={{ width: 40, height: 40, objectFit: "contain", bgcolor: "#f4f7f4", borderRadius: 1 }} />
+                                <Box component="img" src={imgUrl(p.image)} alt="" sx={{ width: 40, height: 40, objectFit: "contain", bgcolor: "#f4f7f4", borderRadius: 1 }} />
                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>{p.name}</Typography></Stack></TableCell>
                               <TableCell>{p.category || "—"}</TableCell>
                               <TableCell align="right">Rs {Number(p.price).toLocaleString()}</TableCell>
@@ -436,8 +436,8 @@ const AdminDashboard = () => {
               </TextField>
               <TextField label="Description" fullWidth multiline rows={3} value={plantForm.description} onChange={(e) => setPf("description", e.target.value)} />
               <Button component="label" variant="outlined" startIcon={<Upload size={18} />} sx={{ borderStyle: "dashed", py: 1.3 }}>
-                {plantImage ? plantImage.name : plantDialog.mode === "edit" ? "Replace image (optional)" : "Upload image"}
-                <input type="file" hidden accept="image/*" onChange={(e) => setPlantImage(e.target.files[0])} />
+                {plantImage ? "Image ready ✓" : plantDialog.mode === "edit" ? "Replace image (optional)" : "Upload image"}
+                <input type="file" hidden accept="image/*" onChange={async (e) => { const f = e.target.files[0]; if (!f) return; try { setPlantImage(await resizeImage(f, { maxDim: 900, quality: 0.72 })); } catch (err) { toast.error(err.message || "Couldn't process image."); } }} />
               </Button>
             </Stack>
           </DialogContent>

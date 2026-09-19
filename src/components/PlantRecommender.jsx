@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { API_BASE_URL } from "../config";
+import { API_BASE_URL, imgUrl } from "../config";
 import axios from "axios";
 import toast from "react-hot-toast";
 import {
@@ -59,7 +59,7 @@ const PlantRecommender = () => {
             {results.map((p) => (
               <Card key={p.id} variant="outlined" sx={{ minWidth: 180, maxWidth: 180, borderRadius: 2, flexShrink: 0 }}>
                 <Box sx={{ bgcolor: "#fff", p: 1.5 }}>
-                  <CardMedia component="img" image={`${uploads}${p.image}`} alt={p.name} sx={{ height: 100, objectFit: "contain" }} />
+                  <CardMedia component="img" image={imgUrl(p.image)} alt={p.name} sx={{ height: 100, objectFit: "contain" }} />
                 </Box>
                 <CardContent sx={{ p: 1.5 }}>
                   <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }} noWrap>{p.name}</Typography>
