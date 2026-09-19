@@ -1043,3 +1043,18 @@ hard-refresh the browser (Ctrl+Shift+R).
   optional (leave REDIS_HOST blank to run without it on a single instance).
 - .env.example updated: DB_SSL, REDIS_PASSWORD, REDIS_TLS added; Stripe removed (not used).
 - Backend already binds process.env.PORT (Render-ready); frontend reads VITE_API_BASE_URL.
+
+## RENDER DEPLOY FIX
+- Render was running `npm run start` (= `nest start`, dev mode) which JIT-compiles TS in
+  memory and OOM-crashed on the free 512MB instance (heap out of memory), so the port never
+  bound ("No open ports detected"). FIX: use the production start command `npm run start:prod`
+  (= `node dist/main`, the pre-built output) as the Render Start Command.
+- Also made app.listen bind 0.0.0.0 explicitly for hosted environments.
+
+## FRONTEND FIX (number field + favicon + meta)
+- Signup number field was broken: register.jsx used onlyDigits() without importing it, so every
+  keystroke threw ReferenceError and the field never updated. Added the missing import — typing
+  works again (still capped at 11 digits, numeric only).
+- Favicon changed to a Go Green leaf (public/favicon.svg) instead of the default Vite logo.
+- index.html now has a proper SEO title ("Go Green — Grow a greener Pakistan"), meta description,
+  keywords, theme-color, and Open Graph + Twitter tags. (Per-page dynamic meta via Seo.jsx stays.)

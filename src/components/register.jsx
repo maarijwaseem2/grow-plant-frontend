@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { API_BASE_URL } from "../config";
 import theme, { PK_PROVINCES, PK_CITIES } from "../theme";
 import loginBg from "../Modules/login-background.jpg";
+import { onlyDigits } from "../utils/image";
 
 import {
   Box, Paper, TextField, Button, Typography, InputAdornment, IconButton,
