@@ -324,10 +324,10 @@ Tested live against a real PostgreSQL 16 + PostGIS 3.4 instance.
   Verified enabled (postgis 3.4.2, spatial_ref_sys table present).
 
 ### Env-based admin seed (replaces the old hardcoded admin)
-- On startup, SeedService creates an admin from ADMIN_EMAIL / ADMIN_PASSWORD if
-  one doesn't already exist. On a fresh Postgres DB there is no old admin to
-  remove. Default seeded admin: admin@gogreen.pk / Admin@12345 (change in .env).
-  Admin self-signup remains blocked. Verified: admin seeded + login works.
+- On startup, SeedService creates an admin if one doesn't already exist.
+  The admin account is seeded from environment variables. On a fresh Postgres
+  DB there is no old admin to remove. Admin self-signup remains blocked.
+  Verified: admin seeded + login works.
 
 ### Rate limiting + RBAC infrastructure
 - Added @nestjs/throttler — a global in-memory rate limiter (100 req/min/IP),
@@ -345,10 +345,10 @@ Tested live against a real PostgreSQL 16 + PostGIS 3.4 instance.
 
 ### How to run Phase 2 locally
 1. Install PostgreSQL + PostGIS. Create a database named `gogreen`.
-2. Ensure the postgres user/password match .env (postgres/postgres) or edit .env.
+2. Ensure the database username and password match the environment variables.
 3. Backend: `npm install && npm run start:dev` — tables auto-create, PostGIS is
-   enabled, and the admin is seeded on first boot. Login: admin@gogreen.pk /
-   Admin@12345. Frontend: `npm run dev`.
+   enabled, and the admin account is seeded from environment variables on first
+   boot. Frontend: `npm run dev`.
 
 ## NEXT — Phase 2 remainder / Phase 3
 - (Optional 2B) Redis-backed caching for map viewport queries; broader DTO
