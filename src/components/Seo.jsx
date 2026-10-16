@@ -15,10 +15,12 @@ function setMeta(attr, key, content) {
 
 export default function Seo({ title, description, image, path }) {
   useEffect(() => {
-    const fullTitle = title ? `${title} · Go Green` : "Go Green — Grow a greener Pakistan";
+    const fullTitle = title
+      ? `${title} · Go Green Pakistan`
+      : "Go Green Pakistan — Plant E-commerce & Tree Sponsorship";
     const desc =
       description ||
-      "Buy plants and garden supplies, sponsor tree plantations, and book verified gardeners across Pakistan with Go Green.";
+      "Go Green Pakistan is a plant shop and tree-sponsorship platform. Buy plants, sponsor plantations on public land, and book gardeners across Pakistan.";
     document.title = fullTitle;
     setMeta("name", "description", desc);
     setMeta("property", "og:title", fullTitle);
@@ -35,7 +37,7 @@ export default function Seo({ title, description, image, path }) {
         link.setAttribute("rel", "canonical");
         document.head.appendChild(link);
       }
-      link.setAttribute("href", `https://gogreen.pk${path}`);
+      link.setAttribute("href", `https://go-green-pakistan.vercel.app${path}`);
     }
   }, [title, description, image, path]);
 
